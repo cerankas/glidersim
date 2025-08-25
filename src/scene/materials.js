@@ -110,6 +110,8 @@ if (THREE.isGPU) {
 }
 
 
+// map shader based on https://jsfiddle.net/prisoner849/ag09r4pL/
+
 export const mapMaterial = THREE.isGPU ? 
   new THREE.MeshLambertNodeMaterial({
     colorNode:  mapColorNode()
