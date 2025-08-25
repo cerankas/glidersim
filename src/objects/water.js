@@ -1,5 +1,5 @@
-import THREE from '@/three/three';
-import { Water } from 'three/addons/objects/Water.js';
+import * as THREE from 'three';
+import { Water } from 'three/addons/objects/Water';
 
 
 // export const water = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), waterMaterial);

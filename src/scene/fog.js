@@ -1,5 +1,5 @@
-import THREE from '@/three/three.js';
-import { guiSettings } from "@/control/gui.js";
+import * as THREE from 'three';
+import { guiSettings } from "@/control/gui";
 import { scene } from '@/scene/scene';
 import { camera } from '@/scene/camera';
 

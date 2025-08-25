@@ -1,4 +1,4 @@
-import THREE from '@/three/three';
+import * as THREE from 'three';
 import { task } from '@/control/task';
 import { multiplayer } from '@/multiplayer/multiplayer';
 

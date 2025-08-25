@@ -1,4 +1,4 @@
-import THREE from '@/three/three';
+import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader';
 import { wind } from '@/map/wind';
 import { multiplayer } from '@/multiplayer/multiplayer';

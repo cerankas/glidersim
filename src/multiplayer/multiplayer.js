@@ -1,5 +1,5 @@
-import { firebase } from './firebase';
-import { peerServer } from './peerServer';
+import { firebase } from '@/multiplayer/firebase';
+import { peerServer } from '@/multiplayer/peerServer';
 import { glider as mainGlider, Glider } from '@/glider/glider';
 import { wind } from '@/map/wind';
 import { gui } from '@/control/gui';

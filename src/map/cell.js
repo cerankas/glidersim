@@ -1,8 +1,8 @@
-import THREE from '@/three/three.js';
-import { generateTerrain, getFaceCentersAndNormals } from "@/map/terrain.js";
-import { terrainMaterial } from '@/scene/materials.js';
-import { generateTrees } from '@/objects/trees.js'
-import { generateHouses } from "@/objects/buildings.js";
+import * as THREE from 'three';
+import { generateTerrain, getFaceCentersAndNormals } from "@/map/terrain";
+import { terrainMaterial } from '@/scene/materials';
+import { generateTrees } from '@/objects/trees'
+import { generateHouses } from "@/objects/buildings";
 
 export class Cell {
   constructor(x, y, size, scene) {

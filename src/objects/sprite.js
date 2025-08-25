@@ -1,4 +1,4 @@
-import THREE from '@/three/three';
+import * as THREE from 'three';
 
 export function createTextSprite() {
   const canvas = document.createElement('canvas');

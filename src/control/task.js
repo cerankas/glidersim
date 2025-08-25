@@ -1,4 +1,4 @@
-import THREE from '@/three/three';
+import * as THREE from 'three';
 import { terrainHeight } from '@/map/terrain';
 import { seededRandom } from '@/utils/random';
 import { gui } from '@/control/gui';

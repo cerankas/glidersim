@@ -1,4 +1,4 @@
-import THREE from '@/three/three';
+import * as THREE from 'three';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise';
 import { guiSettings } from '@/control/gui';
 import { cellManager } from '@/map/cellManager';

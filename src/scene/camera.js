@@ -1,4 +1,4 @@
-import THREE from '@/three/three';
+import * as THREE from 'three';
 
 class Camera extends THREE.PerspectiveCamera {
   mode = 2;

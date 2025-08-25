@@ -1,4 +1,4 @@
-import THREE from '@/three/three';
+import * as THREE from 'three';
 import { seededRandom } from '@/utils/random';
 import { cloudMaterial } from '@/scene/materials';
 import { fog } from '@/scene/fog';

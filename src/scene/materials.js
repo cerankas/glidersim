@@ -1,25 +1,8 @@
-import { positionLocal } from 'three/src/nodes/TSL.js';
-import THREE from '@/three/three';
-import { polkaDots } from 'tsl-textures';
-import { camouflage } from '@/three/camo';
-import { Fn, positionGeometry, vec3, If, mix, fwidth, min, vec4, materialOpacity } from 'three/tsl';
-
+import * as THREE from 'three';
 
 
 export const treeTrunkMaterial = new THREE.MeshLambertMaterial({ color: 0x4d2926, flatShading:true });
-export const treeCrownMaterial = THREE.isGPU && false ?
-  new THREE.MeshPhongNodeMaterial({
-    color: 0xCCCCCC,
-    colorNode: polkaDots ( {
-      count: 2,
-      size: 0.6,
-      blur: 0.22,
-      color: new THREE.Color(0),
-      background: new THREE.Color(16777215)
-    } )
-  })
-  :
-  new THREE.MeshLambertMaterial({ color: 0x7aa21d, flatShading:true });
+export const treeCrownMaterial = new THREE.MeshLambertMaterial({ color: 0x7aa21d, flatShading:true });
 
 
 export const houseWallMaterial = new THREE.MeshLambertMaterial({ color: 0xd0c080, flatShading:true });
@@ -32,43 +15,24 @@ export const waterMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff, f
 
 export const cloudMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading:false, opacity:.1 });
 
-const useCamo = THREE.isGPU;
-export const terrainMaterial = useCamo ?
-  new THREE.MeshLambertNodeMaterial({
-    color: 0xCCCCCC,
-    colorNode: camouflage ( {
-      scale: 1,
-      colorA: new THREE.Color(12762792),
-      colorB: new THREE.Color(10258782),
-      colorC: new THREE.Color(9610101),
-      colorD: new THREE.Color(7435617),
-      seed: 0
-    } ),
-  }) 
-  :
-  new THREE.MeshLambertMaterial({ flatShading: false })
-;
+export const terrainMaterial = new THREE.MeshLambertMaterial({ flatShading: false });
 
-if (!useCamo) {
-  const grass = new THREE.TextureLoader().load("textures/moro.jpg", (map) => {
-    map.wrapS = THREE.RepeatWrapping;
-    map.wrapT = THREE.RepeatWrapping;
-    terrainMaterial.map = map;
-    const ctx = document.createElement('canvas').getContext('2d', {willReadFrequently:true});
-    ctx.canvas.width = map.image.width;
-    ctx.canvas.height = map.image.height;
-    ctx.drawImage(map.image, 0, 0);
-    const pixel = ctx.getImageData(5, 5, 1, 1).data;
-    terrainMaterial.getPixelColor = ((x, y) => {
-      const coord = v => ((((v % 1000) + 1000) % 1000) * 1024 / 1000) | 0;
-      const pixel = ctx.getImageData(coord(x), 1023 - coord(y), 1, 1).data;
-      // return pixel[0]*0x10000 + pixel[1] * 0x100 + pixel[2];
-      return new THREE.Color(pixel[0]*0x10000 + pixel[1] * 0x100 + pixel[2]).convertLinearToSRGB().getHex();
-    }).bind(ctx);
-  });
-}
-
-
+new THREE.TextureLoader().load("textures/moro.jpg", (map) => {
+  map.wrapS = THREE.RepeatWrapping;
+  map.wrapT = THREE.RepeatWrapping;
+  terrainMaterial.map = map;
+  const ctx = document.createElement('canvas').getContext('2d', {willReadFrequently:true});
+  ctx.canvas.width = map.image.width;
+  ctx.canvas.height = map.image.height;
+  ctx.drawImage(map.image, 0, 0);
+  const pixel = ctx.getImageData(5, 5, 1, 1).data;
+  terrainMaterial.getPixelColor = ((x, y) => {
+    const coord = v => ((((v % 1000) + 1000) % 1000) * 1024 / 1000) | 0;
+    const pixel = ctx.getImageData(coord(x), 1023 - coord(y), 1, 1).data;
+    // return pixel[0]*0x10000 + pixel[1] * 0x100 + pixel[2];
+    return new THREE.Color(pixel[0]*0x10000 + pixel[1] * 0x100 + pixel[2]).convertLinearToSRGB().getHex();
+  }).bind(ctx);
+});
 
 
 let mapUniforms = {
@@ -76,51 +40,9 @@ let mapUniforms = {
   maxHeight: {value: 1300},
 }
 
-let mapColorNode = null;
-if (THREE.isGPU) {
-  var defs = {
-    c1: new THREE.Color().setRGB(.5,.3,.2),
-    c2: new THREE.Color().setRGB(0,.6,0),
-    c3: new THREE.Color().setRGB(1,1,0),
-    c4: new THREE.Color().setRGB(1,0,0),
-  }
-  mapColorNode = Fn(() => {
-    var h = positionGeometry.z.div(500.0).toVar();
-    var lineCol = vec3( 0, 0, 0 ).toVar( );
-    
-      If(h.lessThan(1), () => {
-        lineCol.assign(mix(defs.c1, defs.c2, h));
-      })
-      .ElseIf(h.lessThan(2), () => {
-        lineCol.assign(mix(defs.c2, defs.c3, h.sub(1)));
-      })
-      .Else(() => {
-        lineCol.assign(mix(defs.c3, defs.c4, h.sub(2)));
-      });
-
-      var hgrid = positionGeometry.z.div(100).toVar();
-      var grid = hgrid.sub(.5).fract().sub(.5).abs().div(fwidth(hgrid)).toVar();
-      var line = min(grid, 1);
-      // float hgrid = vPos.z / 100.;
-      // float grid = abs(fract(hgrid - 0.5) - 0.5) / fwidth(hgrid) / 1.;
-      // float line = min(grid, 1.0);
-    // vec3 col = mix(lineCol, .5 * lineCol, line);
-      return vec4(mix(lineCol.mul(3), lineCol, line), materialOpacity);
-  });
-}
-
-
 // map shader based on https://jsfiddle.net/prisoner849/ag09r4pL/
 
-export const mapMaterial = THREE.isGPU ? 
-  new THREE.MeshLambertNodeMaterial({
-    colorNode:  mapColorNode()
-  })
-  :
-  new THREE.MeshLambertMaterial({
-  // color: 0x7D6747,
-  // wireframe: false,
-  // side: THREE.DoubleSide,
+export const mapMaterial = new THREE.MeshLambertMaterial({
   onBeforeCompile: shader => {
     shader.uniforms.minHeight = mapUniforms.minHeight;
     shader.uniforms.maxHeight = mapUniforms.maxHeight;
@@ -172,10 +94,5 @@ export const mapMaterial = THREE.isGPU ?
 });
 
 
-if (THREE.isGPU) {
-
-}
-else {
-  mapMaterial.defines = {"USE_UV":""};
-  mapMaterial.extensions = {derivatives: true};
-}
+mapMaterial.defines = {"USE_UV":""};
+mapMaterial.extensions = {derivatives: true};

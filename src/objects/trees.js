@@ -1,4 +1,4 @@
-import THREE from '@/three/three';
+import * as THREE from 'three';
 import { treeCrownMaterial, treeTrunkMaterial } from '@/scene/materials';
 import { seededRandom } from '@/utils/random';
 import { params as terrainParams } from '@/map/terrain';

@@ -1,4 +1,4 @@
-import THREE from '@/three/three';
+import * as THREE from 'three';
 import { glider } from '@/glider/glider';
 import { cellManager } from '@/map/cellManager';
 import { dustBallMaterial, terrainMaterial, waterMaterial } from '@/scene/materials';

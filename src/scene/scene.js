@@ -1,3 +1,3 @@
-import THREE from '@/three/three';
+import * as THREE from 'three';
 
 export const scene = new THREE.Scene();

@@ -1,4 +1,4 @@
-import THREE from '@/three/three';
+import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls';
 import Stats from 'three/addons/libs/stats.module';
 import { glider } from '@/glider/glider';
@@ -75,9 +75,7 @@ camera.setup(initpos);
 
 setFog();
 
-const renderer = THREE.isGPU ?
-	new THREE.WebGPURenderer({antialias:true, logarithmicDepthBuffer:true, forceWebGL:false }) :
-	new THREE.WebGLRenderer({antialias:true, logarithmicDepthBuffer:true });
+const renderer = new THREE.WebGLRenderer({antialias:true, logarithmicDepthBuffer:true });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
@@ -121,7 +119,7 @@ window.addEventListener('resize', () => {
 task.toScene(scene);
 collider.toScene(scene);
 clouds.toScene(scene);
-if (!THREE.isGPU) scene.add(water);
+scene.add(water);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enablePan = false;
@@ -331,24 +329,20 @@ function animate(t) {
 
 	setShadowCameraFrustum(directionalLight, glider.mesh);
 	
-	const renderFunc = (THREE.isGPU ? renderer.renderAsync : renderer.render).bind(renderer);
-
 	renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
 	renderer.setScissor(0, 0, window.innerWidth, window.innerHeight);
 	renderer.setScissorTest(true);
-	renderFunc(scene, camera);
+	renderer.render(scene, camera);
 
 	if (map.show) {
 		map.cam.position.copy(glider.mesh.position);
 		map.cam.rotation.z = map.north ? Math.PI : Math.PI - glider.yaw;
 		map.cam.updateProjectionMatrix();
 		
-		const yy = THREE.isGPU ? window.innerHeight - map.size : 0;
-
-		renderer.setViewport(0, yy, map.size, map.size);
-		renderer.setScissor(0, yy, map.size, map.size);
+		renderer.setViewport(0, 0, map.size, map.size);
+		renderer.setScissor(0, 0, map.size, map.size);
 		renderer.setScissorTest(true);
-		renderFunc(map.scene, map.cam);
+		renderer.render(map.scene, map.cam);
 		map.drawOverlay(glider, wind);
 	}
 	else {

@@ -1,6 +1,6 @@
-import THREE from '@/three/three.js';
-import { generateTerrain } from '@/map/terrain.js';
-import { mapMaterial} from '@/scene/materials.js';
+import * as THREE from 'three';
+import { generateTerrain } from '@/map/terrain';
+import { mapMaterial} from '@/scene/materials';
 
 export class MapCell {
   constructor(x, y, size, scene) {
