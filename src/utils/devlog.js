@@ -1,0 +1,1 @@
+export function devlog(...args) { if (import.meta.env.DEV) console.log(...args); }
