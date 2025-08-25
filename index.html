@@ -14,44 +14,37 @@
 		<div style = "position:absolute; bottom:0; width: 100%; text-align:center; pointer-events: none;">
 			<canvas id="instrumentCanvas" style="z-index: 100; color: transparent; pointer-events: none;" width="600" height="120"></canvas>
 		</div>
-		<div id="help" style="position: absolute; top:100px; bottom:100px; left:100px; right:100px; padding:100px; opacity: 60%; background-color: white;" hidden="true">
-			<center>
-				<h1>Help</h1>
-				<div style="width: 100%; text-align: left;">
-					<table style="width: 100%; text-align: left;">
-						<tr>
-							<td width="">
-								up/down arrow - elevator<br>
-								left/right arrow - ailerons<br>
-								b - airbrake<br>
-								page up/down - map zoom<br>								
-								space - pause<br>
-								h - help<br>
-								<!-- i - show/hide instruments<br> -->
-								<!-- m - show/hide map<br> -->
-								<!-- n - toggle map align to north/airplane<br> -->
-								<!-- a - toggle audio variometer<br> -->
-								<!-- s - toggle airflow sound<br> -->
-							</td>
-							<td>
-								1 - cockpit camera<br>
-								2 - tail camera<br>
-								3 - follow camera<br>
-								4 - free camera<br>
-								c - cycle camera modes<br>
-							</td>
-							<td>
-								shift + up/down arrow - move forward/backward<br>
-								shift + left/right arrow - move left/right<br>
-								shift + page up/down - move up/down<br>
-								shift + &lt;/&gt; - rotate left/right<br>
-								&lt;/&gt; - rudder<br>
-								v - accelerate<br>
-							</td>
-						</tr>
-					</table>					
+		<div id="help" style="position: absolute; z-index: 500; inset:8vmin; padding:8vmin; opacity: 90%; background-color: white; text-align: center;" hidden="true">
+			<div style="display: flex; flex-direction: column; align-items: center">
+				<h2>Keys</h2>
+				<div style="display: flex; flex-direction: row; gap: 8vmin;">
+					<div style="display: flex; text-align: left;">
+						up/down arrow - elevator<br>
+						left/right arrow - ailerons<br>
+						b - airbrake<br>
+						page up/down - map zoom<br>								
+						space - pause<br>
+						h - help<br>
+						<!-- i - show/hide instruments<br> -->
+						<!-- m - show/hide map<br> -->
+						<!-- n - toggle map align to north/airplane<br> -->
+						<!-- a - toggle audio variometer<br> -->
+						<!-- s - toggle airflow sound<br> -->
+					</div>
+					<div style="display: flex; text-align: left;">
+						1 - cockpit camera<br>
+						2 - tail camera<br>
+						3 - follow camera<br>
+						4 - free camera<br>
+						c - cycle camera modes<br>
+					</div>
 				</div>
-			</center>
+				<h2>How to play</h2>
+				Use air lifts on upwind mountain slopes to stay in the air and navigate a procedurally generated terrain.<br>
+				Control the glider ailerons (turn) and elevator (dive/climb) with arrow keys, mouse, touch, or gamepad.<br>
+				<br>
+				<a href="https://github.com/cerankas/glidersim" target="">Source code on github</a>
+			</div>
 		</div>
 		<script type="module" src="/src/main.js"></script>
 	</body>
