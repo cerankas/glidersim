@@ -187,7 +187,10 @@ export class Glider {
   move(dt, airLift) {
     for (let a = 0; a < 3; a++) {
       const control = this.rotationControl[a];
-      this.rotationDelta[a] = Math.max(-Math.abs(control), Math.min(Math.abs(control), this.rotationDelta[a] + control * dt * 10));
+      let delta = this.rotationDelta[a];
+      if (delta < control) delta = Math.min(control, delta + 10 * dt);
+      if (delta > control) delta = Math.max(control, delta - 10 * dt);
+      this.rotationDelta[a] = delta;
       const vector = new THREE.Vector3(
         (a==0) ? 1 : 0, 
         (a==1) ? 1 : 0, 
