@@ -254,7 +254,7 @@ export class Glider {
         }
         if (this.landingGearWheel) this.landingGearWheel.position.z = this.gearPosition * -.2;
         if (this.landingGearDoorLeft) this.landingGearDoorLeft.rotation.y = this.gearPosition *  Math.PI/2;
-        if (this.doorR) this.doorR.rotation.y = this.gearPosition * -Math.PI/2;
+        if (this.landingGearDoorRight) this.landingGearDoorRight.rotation.y = this.gearPosition * -Math.PI/2;
         if (this.landingGrearHandle) this.landingGrearHandle.position.y = this.gearPosition * -.2;
       }
 
