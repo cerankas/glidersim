@@ -282,31 +282,30 @@ function animate(t) {
 	}
 		
 	if (!keys['Shift']) {	
-		if (keys.ArrowUp)    glider.elevator(-1);
-		if (keys.ArrowDown)  glider.elevator(1);
+		if (keys.ArrowUp)    glider.setElevatorControl(-1);
+		if (keys.ArrowDown)  glider.setElevatorControl(1);
 
-		if (keys.ArrowLeft)  glider.ailerons(-1);
-		if (keys.ArrowRight) glider.ailerons(1);
+		if (keys.ArrowLeft)  glider.setAileronsControl(-1);
+		if (keys.ArrowRight) glider.setAileronsControl(1);
 
-		if (keys[','])       glider.rudder(-1);
-		if (keys['.'])       glider.rudder(1);
+		if (keys[','])       glider.setRudderControl(-1);
+		if (keys['.'])       glider.setRudderControl(1);
 	}
 
 	const gamepad = getGamepadState();
 	if (gamepad) {
-		if (gamepad.buttons[0].pressed) glider.elevator(-1);
-		if (gamepad.buttons[2].pressed) glider.elevator(1);
+		if (gamepad.buttons[0].pressed) glider.setElevatorControl(-1);
+		if (gamepad.buttons[2].pressed) glider.setElevatorControl(1);
 
-		if (gamepad.buttons[1].pressed) glider.ailerons(1);
-		if (gamepad.buttons[3].pressed) glider.ailerons(-1);
+		if (gamepad.buttons[1].pressed) glider.setAileronsControl(1);
+		if (gamepad.buttons[3].pressed) glider.setAileronsControl(-1);
 	}
 
-	glider.elevator(pointer.dy);
-	glider.ailerons(pointer.dx);
+	glider.setElevatorControl(pointer.dy);
+	glider.setAileronsControl(pointer.dx);
 
-	if (keys['v'] && !glider.paused) glider.speed /= .995;
-	if (keys['b'] && !glider.paused) glider.speed *= .995;
-	glider.setBrake(keys['b']);
+	glider.setAccelerateControl(keys['v']|0);
+	glider.setBrakeControl(keys['b']|0);
 
 	const windLift = wind.calculateLift(glider.mesh.position);
 

@@ -8,7 +8,7 @@ import { camera } from '@/scene/camera';
 import { collider } from '@/glider/collider';
 
 export class Glider {
-  constructor(initpos, callback) {
+  constructor() {
     this.mesh = null;
     this.elements = null;
     this.paused = true;
@@ -19,7 +19,10 @@ export class Glider {
     this.maxControl = 1/60 * Math.PI / 2;
     this.rotationControl = [0,0,0]; // elevator, ailerons, rudder
     this.rotationDelta   = [0,0,0];
-    this.controlBrake = 0;
+    
+    this.accelerateControl = 0;
+    this.brakeControl = 0;
+    this.brakePosition = 0;
 
     this.gearDelta = 0;
     this.gearPosition = 0;
@@ -73,14 +76,20 @@ export class Glider {
           c.material.opacity = .4;
           c.material.side = THREE.FrontSide;
         }
-        if (c.name == 'WheelF') this.wheel = c;
-        if (c.name == 'LandingGearHandle') this.wheelH = c;
-
-        if (c.name == 'LandingGearDoorL') this.doorL = c;
-        if (c.name == 'LandingGearDoorR') this.doorR = c;
+        if (c.name == 'WheelF') this.landingGearWheel = c;
+        if (c.name == 'LandingGearDoorL') this.landingGearDoorLeft = c;
+        if (c.name == 'LandingGearDoorR') this.landingGearDoorRight = c;
+        if (c.name == 'LandingGearHandle') this.landingGrearHandle = c;
         
-        if (c.name == 'BrakeTop') this.brakeT = c;
-        if (c.name == 'BrakeBottom') this.brakeB = c;
+        if (c.name == 'BrakeTop') this.brakeTopSurface = c;
+        if (c.name == 'BrakeBottom') this.brakeBottomSurface = c;
+        if (c.name == 'BrakeHandle') this.brakeHandle = c;
+
+        if (c.name == 'Elevator') this.elevatorSurface = c;
+        if (c.name == 'AileronL') this.aileronLeftSurface = c;
+        if (c.name == 'AileronR') this.aileronRightSurface = c;
+        if (c.name == 'Rudder') this.rudderSurface = c;
+        if (c.name == 'ControlStick') this.controlStick = c;
       });
       callback(this);
       multiplayer.connect();
@@ -88,8 +97,12 @@ export class Glider {
     });
   }
 
-  setBrake(brake) {
-    this.brake = brake;
+  setAccelerateControl(state) {
+    this.accelerateControl = state;
+  }
+
+  setBrakeControl(state) {
+    this.brakeControl = state;
   }
 
   toggleGear() {
@@ -100,17 +113,17 @@ export class Glider {
     for (let map of this.textures) map.needsUpdate = true;
   }
 
-  elevator(state) {
+  setElevatorControl(state) {
     if (!state) return;
     this.rotationControl[0] = state;
   }
   
-  ailerons(state) {
+  setAileronsControl(state) {
     if (!state) return;
     this.rotationControl[1] = state;
   }
   
-  rudder(state) {
+  setRudderControl(state) {
     if (!state) return;
     this.rotationControl[2] = state;
   }
@@ -198,9 +211,17 @@ export class Glider {
       );
       this.mesh.rotateOnAxis(vector, dt * this.rotationDelta[a] * 1.6);
     }
-    this.rotationControl = [0,0,0];
+
+    let brake = this.brakePosition;
+    if (brake < this.brakeControl) brake = Math.min(this.brakeControl, brake + 5 * dt);
+    if (brake > this.brakeControl) brake = Math.max(this.brakeControl, brake - 5 * dt);
+    this.brakePosition = brake;
     
     if (!this.paused) {
+      console.log(this.accelerateControl)
+      this.speed += 10 * dt * this.accelerateControl;
+      this.speed -= 10 * dt * this.brakePosition;
+
       const delta = this.forward().multiplyScalar(dt * this.speed);
       this.lift = airLift - this.sinkRate();
   
@@ -231,14 +252,24 @@ export class Glider {
           this.gearPosition = 0;
           this.gearDelta = 0;
         }
-        if (this.wheel) this.wheel.position.z = this.gearPosition * -.2;
-        if (this.wheelH) this.wheelH.position.y = this.gearPosition * -.2;
-        if (this.doorL) this.doorL.rotation.y = this.gearPosition *  Math.PI/2;
+        if (this.landingGearWheel) this.landingGearWheel.position.z = this.gearPosition * -.2;
+        if (this.landingGearDoorLeft) this.landingGearDoorLeft.rotation.y = this.gearPosition *  Math.PI/2;
         if (this.doorR) this.doorR.rotation.y = this.gearPosition * -Math.PI/2;
+        if (this.landingGrearHandle) this.landingGrearHandle.position.y = this.gearPosition * -.2;
       }
 
-      if (this.brakeT) this.brakeT.position.z = this.brake *  .1;
-      if (this.brakeB) this.brakeB.position.z = this.brake * -.1;
+      if (this.brakeTopSurface) this.brakeTopSurface.position.z = this.brakePosition *  .1;
+      if (this.brakeBottomSurface) this.brakeBottomSurface.position.z = this.brakePosition * -.1;
+      if (this.brakeHandle) this.brakeHandle.position.y = this.brakePosition * -.2;
+
+      if (this.elevatorSurface) this.elevatorSurface.rotation.x = this.rotationDelta[0] * -.3;
+      if (this.aileronLeftSurface) this.aileronLeftSurface.rotation.z = this.rotationDelta[1] * -.5;
+      if (this.aileronRightSurface) this.aileronRightSurface.rotation.z = this.rotationDelta[1] * .5;
+      if (this.rudderSurface) this.rudderSurface.rotation.z = this.rotationDelta[2] * .3;
+      if (this.controlStick) {
+        this.controlStick.rotation.x = this.rotationDelta[0] * .3;
+        this.controlStick.rotation.y = this.rotationDelta[1] * .3;
+      }
 
       this.time += dt;
     }
@@ -256,6 +287,10 @@ export class Glider {
       this.sprite.scale.copy(this.sprite.initScale.clone().multiplyScalar(dst / 50));
       this.sprite.setText(`${this.peer.nick} ${this.mesh.position.clone().sub(glider.mesh.position).length()|0}m`)
     }
+
+    this.rotationControl = [0,0,0];
+    this.accelerateControl = 0;
+    this.brakeControl = 0;
   }
 }
 
