@@ -22,6 +22,8 @@ import { collider } from '@/glider/collider';
 import { water } from '@/objects/water';
 import { clouds } from '@/objects/clouds';
 
+console.log(`glidersim app build ${__BUILD_TIMESTAMP__}`);
+
 const ui = {
 	toggleAudioVario: () => {
 		if (audioVario.isPlaying) audioVario.stop();
@@ -370,7 +372,7 @@ function animate(t) {
 			const peer = multiplayer.gliders[id];
 			log.push(`${peer.peer.nick}, dt: ${peer.peer.systime - Date.now()}, sent: ${peer.peer.sent}, rec: ${peer.peer.received}`)
 		}
-		log.push('<b>flight</b> time: ' + glider.time.toFixed(2));
+		log.push(`flight time: ${glider.time.toFixed(2)}`);
 		log.push(`trees: ${cellManager.treeCnt}`)
 		log.push(`houses: ${cellManager.houseCnt}`)
 		log.push(`collider balls: ${collider.balls.length}`)

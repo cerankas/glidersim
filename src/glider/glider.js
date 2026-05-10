@@ -218,7 +218,6 @@ export class Glider {
     this.brakePosition = brake;
     
     if (!this.paused) {
-      console.log(this.accelerateControl)
       this.speed += 10 * dt * this.accelerateControl;
       this.speed -= 10 * dt * this.brakePosition;
 
