@@ -97,7 +97,7 @@ class Task {
     glider.mesh.rotation.y = 0;
     glider.mesh.rotation.z = 0;
     glider.speed = 90 / 3.6;
-    if (camera.mode == 2 || camera.mode == 3) camera.position.copy(new THREE.Vector3(2,-20,5).add(glider.mesh.position));
+    if (camera.view.name == 'follow' || camera.view.name == 'free') camera.setup(glider.mesh.position);
   }
 
   generate() {

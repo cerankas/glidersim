@@ -1,65 +1,57 @@
 import * as THREE from 'three';
+import { CockpitView } from './cockpitView';
+import { TailView } from './tailView';
+import { FollowView } from './followView';
+import { FreeView } from './freeView';
 
 class Camera extends THREE.PerspectiveCamera {
-  mode = 2;
-  modes = ['cockpit','tail','follow','free'];
+  views = [new CockpitView(), new TailView(), new FollowView(), new FreeView()];
+  view = this.views[2];
+  
   constructor() {
     super(75, window.innerWidth / window.innerHeight, .01, 5000);
-    this.up.set(0,0,1);
   }
-  
-  
+
+  bindInput(domElement) {
+    domElement.addEventListener('pointermove', e => {
+      if (e.buttons != 1) return;
+      const span = document.body.clientHeight / 3;
+      this.view.onPan(e.movementX / span, e.movementY / span);
+    });
+
+    domElement.addEventListener('pointerdown', e => {
+      if (e.button == 2) {
+        this.resetOrbiting();
+        e.preventDefault();
+      }
+    });
+
+    domElement.addEventListener('wheel', e => {
+      this.view.onZoom(1.1 ** (e.deltaY > 0 ? 1 : -1));
+    });
+  }
+
+  resetOrbiting() {
+    this.view.reset();
+  }
+
   changeMode() {
-    this.mode = (this.mode + 1) % this.modes.length;
-  }
-
-  setMode(mode) {
-    this.mode = mode;
+    const viewIndex = this.views.indexOf(this.view);
+    this.setMode((viewIndex + 1) % this.views.length);
   }
   
-  setup(initpos) {
-    // camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, .01, 5000);
-    this.position.copy(new THREE.Vector3(2,-20,5).add(initpos));
+  setMode(viewIndex) {
+    this.view = this.views[viewIndex];
   }
   
-  update(glider, controls) {
-    if (this.mode == 0) { // cockpit
-      this.up.copy(glider.up());
-      this.position.copy(glider.pilotPosition());
-      this.lookAt(glider.cockpitPosition());
-      this.updateProjectionMatrix();
-    }
-    
-    if (this.mode == 1) { // tail
-      this.up.copy(glider.up());
-      this.position.copy(glider.tailPosition());
-      this.lookAt(glider.cockpitPosition());
-      this.updateProjectionMatrix();
-    }
-    
-    if (this.mode == 2) { // follow
-      this.up.copy(new THREE.Vector3(0,0,1));
-      controls.maxDistance = 12;
-      controls.update();
-    }
-    
-    if (this.mode == 3) { // free
-      this.up.copy(new THREE.Vector3(0,0,1));
-      controls.maxDistance = Infinity;
-      controls.update();
-    }
-    
-    const overSpeed = glider.overSpeed();
-    if (!glider.paused && overSpeed > 0 && false) {
-      const turbulence = .02 * overSpeed;
-      this.rotation.x += Math.random() * turbulence;
-      this.rotation.y += Math.random() * turbulence;
-      this.rotation.z += Math.random() * turbulence;
-    }
-
-    controls.enableRotate = glider.paused;
-    controls.enableZoom = glider.paused;
+  setup(position) {
+    this.position.set(2,-20,5).add(position);
+    this.view.setup?.(this.position);
+  }
+  
+  update(glider) {
+    this.view.update(this, glider);
   }
 }
-  
+
 export const camera = new Camera();

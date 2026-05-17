@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls';
 import Stats from 'three/addons/libs/stats.module';
 import { glider } from '@/glider/glider';
 import { wind } from '@/map/wind';
@@ -123,11 +122,12 @@ collider.toScene(scene);
 clouds.toScene(scene);
 scene.add(water);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enablePan = false;
+camera.bindInput(renderer.domElement);
 
 
 
+
+document.addEventListener('contextmenu', e => e.preventDefault());
 
 const pointer = {
 	x0: 0,
@@ -145,6 +145,7 @@ function clamp(v) { return Math.max(-1, Math.min(1, v)); }
 // });
 
 document.addEventListener('pointermove', e => {
+	return;
 	if (glider.paused) {
 		pointer.dx = 0;
 		pointer.dy = 0;
@@ -175,6 +176,7 @@ function jump(dx, dy, dz) {
 	const delta = new THREE.Vector3(c*dx, c*dy, c*dz);
 	glider.mesh.position.add(delta);
 	camera.position.add(delta);
+	camera.view.base?.add(delta);
 }
 
 document.addEventListener("keydown", (e) => { 
@@ -247,6 +249,10 @@ document.addEventListener("keypress", (e) => {
 	}
 	if (e.key == '4') {
 		camera.setMode(3);
+	}
+
+	if (e.key == '0') {
+		camera.resetOrbiting();
 	}
 
 	if (e.key == 'g') {
@@ -324,7 +330,7 @@ function animate(t) {
 
 	water.material.uniforms['time'].value -= dt;
 
-	camera.update(glider, controls);
+	camera.update(glider);
 
 	instruments.update();
 
@@ -407,7 +413,6 @@ function animate(t) {
 }
 
 glider.load(initpos, (glider) => {
-	controls.target = glider.mesh.position;
 	scene.add(glider.mesh);
 	directionalLight.target = glider.mesh;
 	task.generate();
