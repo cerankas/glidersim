@@ -201,8 +201,8 @@ export class Glider {
     for (let a = 0; a < 3; a++) {
       const control = this.rotationControl[a];
       let delta = this.rotationDelta[a];
-      if (delta < control) delta = Math.min(control, delta + 10 * dt);
-      if (delta > control) delta = Math.max(control, delta - 10 * dt);
+      if (delta < control) delta = Math.min(control, delta + 3 * dt);
+      if (delta > control) delta = Math.max(control, delta - 3 * dt);
       this.rotationDelta[a] = delta;
       const vector = new THREE.Vector3(
         (a==0) ? 1 : 0, 
@@ -213,8 +213,8 @@ export class Glider {
     }
 
     let brake = this.brakePosition;
-    if (brake < this.brakeControl) brake = Math.min(this.brakeControl, brake + 5 * dt);
-    if (brake > this.brakeControl) brake = Math.max(this.brakeControl, brake - 5 * dt);
+    if (brake < this.brakeControl) brake = Math.min(this.brakeControl, brake + 3 * dt);
+    if (brake > this.brakeControl) brake = Math.max(this.brakeControl, brake - 3 * dt);
     this.brakePosition = brake;
     
     if (!this.paused) {
