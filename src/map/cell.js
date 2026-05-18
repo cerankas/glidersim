@@ -18,8 +18,9 @@ export class Cell {
     // this.mesh.castShadow = true;
     
     [this.centers, this.normals] = getFaceCentersAndNormals(this.mesh.geometry);
-    this.trees = generateTrees(this.mesh.geometry, this.normals);
-    this.houses = generateHouses(this.mesh.geometry, this.normals);
+    const avoid = [];
+    this.houses = generateHouses(this.mesh.geometry, this.normals, avoid);
+    this.trees = generateTrees(this.mesh.geometry, this.normals, avoid);
     this.scene.add(this.mesh);
     this.scene.add(this.trees);
     this.scene.add(this.houses);

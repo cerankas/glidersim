@@ -3,7 +3,9 @@ import { houseWallMaterial, houseRoofMaterial } from '@/scene/materials';
 import { seededRandom } from '@/utils/random';
 import { params as terrainParams } from '@/map/terrain';
 
-let random = seededRandom(12345678+1);
+let random = seededRandom(12345678);
+
+let houseRadius = 7;
 
 function createPart(part, z) {
   // part.rotateX(Math.PI/2);
@@ -30,7 +32,7 @@ const roofFaces = [
 const walls = createPart(new THREE.BoxGeometry(1,1,1), 0);
 const roof = createPart(new THREE.PolyhedronGeometry(roofVertices, roofFaces, .8), .5);
 
-export function generateHouses(geometry, normals) {
+export function generateHouses(geometry, normals, avoid) {
   const density = (terrainParams.segmentSize / 50) ** 2;
 
   let totalCount = 0;
@@ -61,6 +63,7 @@ export function generateHouses(geometry, normals) {
 
   const matrix = new THREE.Matrix4;
   const mulMatrix = new THREE.Matrix4;
+  const housePosition = new THREE.Vector3;
   let houseNumber = 0;
 
   for (let [i,cnt] of countsOnTriangles) {
@@ -73,10 +76,25 @@ export function generateHouses(geometry, normals) {
       const wc = 1 - wa - wb;
 
       mulMatrix.makeRotationZ(random() * Math.PI);
-      // matrix.makeRotationZ(random() * Math.PI);
       matrix.makeScale(7,5,5);
       matrix.setPosition(a.clone().multiplyScalar(wa).add(b.clone().multiplyScalar(wb)).add(c.clone().multiplyScalar(wc)));
       matrix.multiply(mulMatrix);
+      
+      housePosition.setFromMatrixPosition(matrix);
+      
+      if (housePosition.z < 0) continue;
+      
+      let collision = false;
+      for (let [position, radius] of avoid) {
+        if (Math.hypot(housePosition.x - position.x, housePosition.y - position.y) < houseRadius + radius) {
+          collision = true;
+          break;
+        }
+      }
+      if (collision) continue;
+
+      avoid.push([housePosition.clone(), houseRadius]); 
+      
       wallMesh.setMatrixAt(houseNumber, matrix); 
       roofMesh.setMatrixAt(houseNumber, matrix);
       houseNumber++;
@@ -86,5 +104,7 @@ export function generateHouses(geometry, normals) {
   const group =  new THREE.Group();
   group.add(wallMesh);
   group.add(roofMesh);
+  wallMesh.count = houseNumber;
+  roofMesh.count = houseNumber;
   return group;
 }
