@@ -229,6 +229,7 @@ export class Glider {
       this.mesh.position.z += dt * this.lift;
       
       this.speed = Math.sqrt(this.speed**2 - 2 * 9.81 * delta.z);
+      if (!isFinite(this.speed) || this.speed < .1) this.speed = .1;
 
       this.speed *= 1 - this.overSpeed()/200;
   
