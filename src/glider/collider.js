@@ -1,6 +1,4 @@
 import * as THREE from 'three';
-import { glider } from '@/glider/glider';
-import { cellManager } from '@/map/cellManager';
 import { dustBallMaterial, terrainMaterial, waterMaterial } from '@/scene/materials';
 import { playTreeSound } from '@/sound/treeSound';
 import { playGroundSound } from '@/sound/groundSound';
@@ -8,7 +6,8 @@ import { playRoofSound } from '@/sound/roofSound';
 import { water } from '@/objects/water';
 import { playWaterSound } from '@/sound/waterSound';
 
-class Collider {
+
+export class Collider {
   constructor() {
     this.maxCount = 100;
     this.raycaster = new THREE.Raycaster();
@@ -23,7 +22,7 @@ class Collider {
     scene.add(this.ballMesh);
   }
 
-  addBall(position, color) {
+  addBall(position, color, glider) {
     const rnd = () => Math.random() * 15;
     this.balls.push({
       position, 
@@ -33,7 +32,7 @@ class Collider {
     });
   }
 
-  update(dt) {
+  update(dt, cellManager, glider) {
     this.supported = false;
     
     const directions = [
@@ -54,7 +53,7 @@ class Collider {
       
       const i = this.raycaster.intersectObject(water, true);
       if (i.length) {
-        this.addBall(i[0].point.clone(), 0x0000ff);
+        this.addBall(i[0].point.clone(), 0x0000ff, glider);
         if (!glider.paused) playWaterSound(glider.speed);
         glider.mesh.position.z = Math.max(glider.mesh.position.z, 0);
         this.supported = true;
@@ -72,7 +71,7 @@ class Collider {
             //   speed: glider.forward().multiplyScalar(glider.speed).add(new THREE.Vector3(rnd(), rnd(), rnd() + 5)),
             //   color: object == 'mesh' ? terrainMaterial.getPixelColor(i[0].point.x, i[0].point.y) : (object == 'trees' ? 0x7aa21d : 0xc00000),
             // });
-            this.addBall(i[0].point.clone(), object == 'mesh' ? terrainMaterial.getPixelColor(i[0].point.x, i[0].point.y) : (object == 'trees' ? 0x7aa21d : 0xc00000));
+            this.addBall(i[0].point.clone(), object == 'mesh' ? terrainMaterial.getPixelColor(i[0].point.x, i[0].point.y) : (object == 'trees' ? 0x7aa21d : 0xc00000), glider);
             
             if (object == 'mesh') {
               const normal = i[0].normal;
@@ -120,5 +119,3 @@ class Collider {
     this.balls = this.balls.filter((ball, i) => i > this.balls.length - this.maxCount && ball.scale > .1);
   }
 }
-
-export const collider = new Collider();

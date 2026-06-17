@@ -1,7 +1,8 @@
 import { Cell } from '@/map/cell';
 import { fog } from '@/scene/fog';
 
-class CellManager {
+
+export class CellManager {
   constructor() {
     this.cellSize = 1000;
     this.cells = [];
@@ -50,5 +51,3 @@ class CellManager {
 
   }
 }
-
-export const cellManager = new CellManager();

@@ -1,8 +1,7 @@
 import * as THREE from 'three';
-import { task } from '@/control/task';
-import { multiplayer } from '@/multiplayer/multiplayer';
 
-class MiniMap {
+
+export class MiniMap {
   constructor() {
     this.size = 300;
     this.range = 2000;
@@ -31,7 +30,7 @@ class MiniMap {
     this.cam.bottom = this.range;
   }
 
-  drawOverlay(glider, wind) {
+  drawOverlay(glider, wind, task, multiplayerGliders) {
     const ctx = this.canvas.getContext('2d');
     const size = this.size;
     const scale = this.size / this.range / 2;
@@ -98,8 +97,8 @@ class MiniMap {
       ctx.restore();
 
       // peer glider symbols
-      for (let id in multiplayer.gliders) {
-        const peer = multiplayer.gliders[id];
+      for (let id in multiplayerGliders) {
+        const peer = multiplayerGliders[id];
         ctx.save();
         ctx.strokeStyle = 'black';
         if (!this.north) ctx.rotate(-glider.yaw);
@@ -191,5 +190,3 @@ class MiniMap {
     ctx.clearRect(0, 0, size, size);
   }
 }
-
-export const miniMap = new MiniMap();

@@ -13,8 +13,6 @@ export const dustBallMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff,
 // export const waterMaterial = new THREE.MeshLambertMaterial({ color: 0x0000ff, flatShading:true, side: THREE.DoubleSide });
 export const waterMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff, flatShading:true, side: THREE.DoubleSide, roughness:0 });
 
-export const cloudMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading:false, opacity:.1 });
-
 export const terrainMaterial = new THREE.MeshLambertMaterial({ flatShading: false });
 
 new THREE.TextureLoader().load("textures/moro.jpg", (map) => {

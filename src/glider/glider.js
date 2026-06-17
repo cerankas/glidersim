@@ -1,11 +1,10 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader';
 import { wind } from '@/map/wind';
-import { multiplayer } from '@/multiplayer/multiplayer';
 import { createTextSprite } from '@/objects/sprite';
 import { scene } from '@/scene/scene';
 import { camera } from '@/scene/camera';
-import { collider } from '@/glider/collider';
+
 
 export class Glider {
   constructor() {
@@ -16,7 +15,6 @@ export class Glider {
     this.speed = 90 / 3.6;
     this.stallSpeed = 60 / 3.6;
     
-    this.maxControl = 1/60 * Math.PI / 2;
     this.rotationControl = [0,0,0]; // elevator, ailerons, rudder
     this.rotationDelta   = [0,0,0];
     
@@ -92,7 +90,6 @@ export class Glider {
         if (c.name == 'ControlStick') this.controlStick = c;
       });
       callback(this);
-      multiplayer.connect();
       return this;
     });
   }
@@ -194,10 +191,10 @@ export class Glider {
   }
 
   overSpeed() {
-    return Math.max(0, glider.speed * 3.6 - 280)**2 / 20**2;
+    return Math.max(0, this.speed * 3.6 - 280)**2 / 20**2;
   }
 
-  move(dt, airLift) {
+  move(dt, airLift, supported, referenceGlider) {
     for (let a = 0; a < 3; a++) {
       const control = this.rotationControl[a];
       let delta = this.rotationDelta[a];
@@ -233,7 +230,7 @@ export class Glider {
 
       this.speed *= 1 - this.overSpeed()/200;
   
-      if (this.speed < this.stallSpeed && !collider.supported) {
+      if (this.speed < this.stallSpeed && !supported) {
         this.mesh.rotateOnAxis(new THREE.Vector3(1,0,0), .01 * dt * (this.stallSpeed - this.speed)**3 * (this.up().z > 0 ? -1 : 1));
       }
       
@@ -285,7 +282,7 @@ export class Glider {
       const dst = this.sprite.position.clone().sub(camera.position).length();
       this.sprite.position.copy(this.mesh.position.clone().add(camera.up.clone().multiplyScalar(1 + dst / 100)));
       this.sprite.scale.copy(this.sprite.initScale.clone().multiplyScalar(dst / 50));
-      this.sprite.setText(`${this.peer.nick} ${this.mesh.position.clone().sub(glider.mesh.position).length()|0}m`)
+      this.sprite.setText(`${this.peer.nick} ${this.mesh.position.clone().sub(referenceGlider.mesh.position).length()|0}m`)
     }
 
     this.rotationControl = [0,0,0];
@@ -293,5 +290,3 @@ export class Glider {
     this.brakeControl = 0;
   }
 }
-
-export const glider = new Glider();

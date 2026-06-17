@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { terrainHeight } from '@/map/terrain';
 import { seededRandom } from '@/utils/random';
 import { gui } from '@/control/gui';
-import { glider } from '@/glider/glider';
 import { camera } from '@/scene/camera';
 import { playCheckpointSound } from '@/sound/checkpointSound';
 
-class Task {
+
+export class Task {
   constructor() {
     this.maxCount = 100;
 
@@ -87,7 +87,7 @@ class Task {
     gui.updateDisplay();
   }
 
-  resetGliderPosition() {
+  resetGliderPosition(glider) {
     if (glider == undefined) return;
     if (!glider.mesh) return;
     glider.mesh.position.x = this.x0;
@@ -140,8 +140,6 @@ class Task {
     this.mesh.computeBoundingSphere();
 
     this.current = 0;
-
-    this.resetGliderPosition();
   }
 
   toScene(scene) {
@@ -152,8 +150,8 @@ class Task {
     return this.toTarget.x**2 + this.toTarget.y**2 < this.radius**2 && Math.abs(this.toTarget.z) < this.radius;
   }
 
-  advance() {
-    this.times.push(glider.time);
+  advance(time) {
+    this.times.push(time);
     this.mesh.setColorAt(this.current, this.passedColor);
     this.current += 1;
     this.mesh.setColorAt(this.current, this.activeColor);
@@ -161,11 +159,9 @@ class Task {
     playCheckpointSound();
   }
 
-  update(position) {
+  update(position, time) {
     if (this.current >= this.points.length) return;
     this.toTarget = this.points[this.current].clone().sub(position);
-    if (this.reached()) this.advance();
+    if (this.reached()) this.advance(time);
   }
 }
-
-export const task = new Task();

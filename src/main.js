@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module';
-import { glider } from '@/glider/glider';
+import { Glider } from '@/glider/glider';
 import { wind } from '@/map/wind';
 import { setShadowCameraFrustum } from '@/scene/shadow';
 import { AudioVario } from '@/sound/audioVario';
@@ -9,17 +9,29 @@ import { camera } from '@/scene/camera';
 import { gui } from '@/control/gui';
 import { scene } from '@/scene/scene';
 import { fog, setFog } from '@/scene/fog';
-import { instruments } from '@/glider/instruments';
-import { task } from '@/control/task';
-import { miniMap as map } from '@/map/miniMap';
-import { cellManager } from '@/map/cellManager';
-import { mapManager } from '@/map/mapManager';
-import { multiplayer } from '@/multiplayer/multiplayer';
+import { Instruments } from '@/glider/instruments';
+import { Task } from '@/control/task';
+import { MiniMap } from '@/map/miniMap';
+import { CellManager } from '@/map/cellManager';
+import { MapManager } from '@/map/mapManager';
+import { Multiplayer } from '@/multiplayer/multiplayer';
 import { getGamepadState } from '@/control/gamepad';
-import { peerServer } from '@/multiplayer/peerServer';
-import { collider } from '@/glider/collider';
+import { Collider } from '@/glider/collider';
 import { water } from '@/objects/water';
-import { clouds } from '@/objects/clouds';
+
+
+const task = new Task();
+const collider = new Collider();
+const glider = new Glider();
+const instruments = new Instruments();
+
+const cellManager = new CellManager();
+const mapManager = new MapManager();
+const miniMap = new MiniMap();
+
+const multiplayer = new Multiplayer(glider);
+
+
 
 console.log(`glidersim app build ${__BUILD_TIMESTAMP__}`);
 
@@ -70,7 +82,7 @@ document.body.appendChild(stats.dom);
 
 
 cellManager.setScene(scene);
-mapManager.setScene(map.scene);
+mapManager.setScene(miniMap.scene);
 
 camera.setup(initpos);
 
@@ -119,7 +131,6 @@ window.addEventListener('resize', () => {
 
 task.toScene(scene);
 collider.toScene(scene);
-clouds.toScene(scene);
 scene.add(water);
 
 camera.bindInput(renderer.domElement);
@@ -196,10 +207,10 @@ document.addEventListener("keydown", (e) => {
 	if (document.activeElement != document.body) return;
 
 	if (!keys.Shift && newPress('PageUp')) {
-		map.changeScale(.5);
+		miniMap.changeScale(.5);
 	}
 	if (!keys.Shift && newPress('PageDown')) {
-		map.changeScale(2);
+		miniMap.changeScale(2);
 	}
 	
 	keys[e.key] = 1;
@@ -315,24 +326,22 @@ function animate(t) {
 	glider.setAccelerateControl(keys['v']|0);
 	glider.setBrakeControl(keys['b']|0);
 
-	const windLift = wind.calculateLift(glider.mesh.position);
+	const windLift = wind.calculateLift(glider.mesh.position, cellManager);
 
-	glider.move(dt, windLift);
+	glider.move(dt, windLift, collider.supported);
 
 	water.position.x = glider.mesh.position.x;
 	water.position.y = glider.mesh.position.y;
 
-	clouds.update(glider.forward().multiplyScalar(fog.far / 2).add(glider.mesh.position), wind.vector().multiplyScalar(dt));
-
-	multiplayer.update(t);
+	multiplayer.update(t, cellManager);
 	
-	task.update(glider.mesh.position);
+	task.update(glider.mesh.position, glider.time);
 
 	water.material.uniforms['time'].value -= dt;
 
 	camera.update(glider);
 
-	instruments.update();
+	instruments.update(glider);
 
 	setShadowCameraFrustum(directionalLight, glider.mesh);
 	
@@ -341,19 +350,19 @@ function animate(t) {
 	renderer.setScissorTest(true);
 	renderer.render(scene, camera);
 
-	if (map.show) {
-		map.cam.position.copy(glider.mesh.position);
-		map.cam.rotation.z = map.north ? Math.PI : Math.PI - glider.yaw;
-		map.cam.updateProjectionMatrix();
+	if (miniMap.show) {
+		miniMap.cam.position.copy(glider.mesh.position);
+		miniMap.cam.rotation.z = miniMap.north ? Math.PI : Math.PI - glider.yaw;
+		miniMap.cam.updateProjectionMatrix();
 		
-		renderer.setViewport(0, 0, map.size, map.size);
-		renderer.setScissor(0, 0, map.size, map.size);
+		renderer.setViewport(0, 0, miniMap.size, miniMap.size);
+		renderer.setScissor(0, 0, miniMap.size, miniMap.size);
 		renderer.setScissorTest(true);
-		renderer.render(map.scene, map.cam);
-		map.drawOverlay(glider, wind);
+		renderer.render(miniMap.scene, miniMap.cam);
+		miniMap.drawOverlay(glider, wind, task, multiplayer.gliders);
 	}
 	else {
-		map.clearOverlay();
+		miniMap.clearOverlay();
 	}
 
 	if (t > lastVario + 500) {
@@ -368,12 +377,12 @@ function animate(t) {
   }
 
 	cellManager.update(glider.mesh.position.x, glider.mesh.position.y);
-	mapManager.update(glider.mesh.position.x, glider.mesh.position.y);
+	mapManager.update(glider.mesh.position.x, glider.mesh.position.y, miniMap.range);
 
-	collider.update(dt);
+	collider.update(dt, cellManager, glider);
 
 	if (ui.stats) {
-		let log = [`build ${__BUILD_TIMESTAMP__}`, `id ${peerServer.peerId}`, `${multiplayer.nick}, sent: ${peerServer.sent}, rec: ${peerServer.received}`];
+		let log = [`build ${__BUILD_TIMESTAMP__}`, `id ${multiplayer.peerServer.peerId}`, `${multiplayer.nick}, sent: ${multiplayer.peerServer.sent}, rec: ${multiplayer.peerServer.received}`];
 		for (let id in multiplayer.gliders) {
 			const peer = multiplayer.gliders[id];
 			log.push(`${peer.peer.nick}, dt: ${peer.peer.systime - Date.now()}, sent: ${peer.peer.sent}, rec: ${peer.peer.received}`)
@@ -416,7 +425,9 @@ glider.load(initpos, (glider) => {
 	scene.add(glider.mesh);
 	directionalLight.target = glider.mesh;
 	task.generate();
-	instruments.update();
+	task.resetGliderPosition(glider);
+	instruments.update(glider);
 	renderer.setAnimationLoop(animate);
+	multiplayer.connect();
 });
 

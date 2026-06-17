@@ -1,9 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, get, push } from "firebase/database";
-import { glider } from '@/glider/glider';
 import { devlog } from "@/utils/devlog";
 
-class Firebase {
+
+export class Firebase {
   constructor() {
     this.app = null;
     this.db = null;
@@ -23,18 +23,18 @@ class Firebase {
   }
 
 
-  connect(id, nick, callback) {
+  connect(id, nick, glider, callback) {
     if (!this.app) this.app = initializeApp(this.firebaseConfig);
     if (!this.db) this.db = getDatabase();
     this.id = id;
     this.nick = nick;
-    this.broadcast();    
+    this.broadcast(glider);    
     get(ref(this.db, 'users')).then((snapshot) => {
       callback(snapshot.val());
     });
   }
 
-  broadcast() {
+  broadcast(glider) {
     devlog('broadcast',this.id);
     const time = new Date();
     const status = {
@@ -62,5 +62,3 @@ class Firebase {
   //   });
   // }
 }
-  
-export const firebase = new Firebase();

@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { guiSettings } from '@/control/gui';
-import { cellManager } from '@/map/cellManager';
 
 class Wind {
   constructor() {
@@ -22,7 +21,7 @@ class Wind {
     return wind;
   }
     
-  calculateLift(position) {
+  calculateLift(position, cellManager) {
     const windDirection = this.vector().normalize();
 
     const minx = position.x - this.range;

@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise';
 import { guiSettings } from '@/control/gui';
-import { cellManager } from '@/map/cellManager';
 
 export const params = {
   segmentSize:50,
@@ -14,7 +13,7 @@ export const params = {
   waterLevel: 500,
 };
 
-const folder = guiSettings.addFolder('Terrain').onChange(() => { cellManager.invalidate(); }).close();
+const folder = guiSettings.addFolder('Terrain').close();
 folder.add(params,'segmentSize',10,500).step(1);
 folder.add(params,'a',0,.01).name('period a');
 folder.add(params,'b',0,.01).name('period b');

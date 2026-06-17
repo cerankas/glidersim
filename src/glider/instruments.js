@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { glider } from '@/glider/glider';
 import { camera } from "@/scene/camera";
+
 
 function lerp(a1, a2, t) {
   return a1 + (a2 - a1) * t;
@@ -113,7 +113,7 @@ function preDrawSpeed(half) {
   return canvas;
 }
 
-function drawSpeed(ctx, half, x0, canvas) {  
+function drawSpeed(ctx, half, x0, canvas, speed) {  
   ctx.save();
   ctx.translate(x0+half, half);
   // ctx.clearRect(-half, -half, 2*half, 2*half);
@@ -121,11 +121,11 @@ function drawSpeed(ctx, half, x0, canvas) {
   ctx.drawImage(canvas, -half, -half);
   ctx.globalCompositeOperation = 'source-over';
   
-  drawTextBox(ctx, 0, -20, 21, `${(glider.speed * 3.6 | 0)}`);
+  drawTextBox(ctx, 0, -20, 21, `${(speed * 3.6 | 0)}`);
 
   ctx.lineWidth = 3;
   ctx.strokeStyle = 'white';
-  const angle = speedAngle(3.6 * glider.speed) * 180 / Math.PI;
+  const angle = speedAngle(3.6 * speed) * 180 / Math.PI;
   drawDivs(ctx, half-15, 0, angle, angle, 1);
 
   // drawTextBox(ctx, 0, -20, 24, '123');
@@ -133,7 +133,7 @@ function drawSpeed(ctx, half, x0, canvas) {
   ctx.restore();
 }
 
-function drawVario(ctx, half, x0) {
+function drawVario(ctx, half, x0, lift) {
   ctx.save();
   ctx.translate(x0+half, half);
   ctx.clearRect(-half, -half, 2*half, 2*half);
@@ -150,22 +150,22 @@ function drawVario(ctx, half, x0) {
   ctx.fillText('+', 0, -12);
   ctx.fillText('-', 0, 12);
 
-  const lift = glider.lift.toFixed(1);
-  const sign = glider.lift >= 0 ? '+' : '';
-  drawTextBox(ctx, 0, -24, 27, sign + lift);
+  const liftValue = lift.toFixed(1);
+  const liftSign = lift >= 0 ? '+' : '';
+  drawTextBox(ctx, 0, -24, 27, liftSign + liftValue);
 
   ctx.lineWidth = 3;
-  const varioAngle = 180 + glider.lift / 30 * 360;
+  const varioAngle = 180 + lift / 30 * 360;
   drawDivs(ctx, half-15, 0, varioAngle, varioAngle, 1);
 
   ctx.restore();
 }
 
-function drawLevel(ctx, half, x0) {
+function drawLevel(ctx, half, x0, roll, pitch) {
   ctx.save();
   ctx.translate(x0+half, half);
   ctx.clearRect(-half, -half, 2*half, 2*half);
-  if ([0,1].includes(camera.mode)) ctx.rotate(-glider.roll);
+  if ([0,1].includes(camera.mode)) ctx.rotate(-roll);
   ctx.beginPath();
   ctx.lineWidth = 1;
   ctx.fillStyle = 'skyBlue';
@@ -173,8 +173,8 @@ function drawLevel(ctx, half, x0) {
   ctx.arc(0, 0, half-1, 0, 2*Math.PI);
   ctx.fill();
 
-  const a1 = Math.asin(glider.pitch / (Math.PI/2));
-  const a2 = Math.PI - Math.asin(glider.pitch / (Math.PI/2));
+  const a1 = Math.asin(pitch / (Math.PI/2));
+  const a2 = Math.PI - Math.asin(pitch / (Math.PI/2));
 
   drawCircle(ctx, half-1, 'sienna', '', a1, a2);
 
@@ -195,7 +195,7 @@ function drawLevel(ctx, half, x0) {
 
   drawTriangle(ctx, half-15, 5, 90);
   drawTriangle(ctx, half-15, 5, -90);
-  ctx.rotate(glider.roll);
+  ctx.rotate(roll);
   drawDivs(ctx, half-1, half-10, 30, 150, 30);
   drawDivs(ctx, half-1, half-10, -150, -30, 30);
   drawDivs(ctx, half-1, half-15, 0, 360, 180);
@@ -207,7 +207,7 @@ function drawLevel(ctx, half, x0) {
   ctx.restore();
 }
 
-function drawAltim(ctx, half, x0) {
+function drawAltim(ctx, half, x0, altitude) {
   ctx.save();
   ctx.translate(x0+half, half);
   ctx.clearRect(-half, -half, 2*half, 2*half);
@@ -225,20 +225,21 @@ function drawAltim(ctx, half, x0) {
   ctx.fillText('m', 0, 15);
   ctx.fillText('x1000', 0, 28);
 
-  drawTextBox(ctx, 0, -28, 27, `${glider.mesh.position.z | 0}`);
+  drawTextBox(ctx, 0, -28, 27, `${altitude | 0}`);
 
   ctx.lineWidth = 3;
-  const altAngle100 = 90 + glider.mesh.position.z / 1000 * 360;
+  const altAngle100 = 90 + altitude / 1000 * 360;
   drawDivs(ctx, half-15, 0, altAngle100, altAngle100, 1);
   
   ctx.lineWidth = 5;
-  const altAngle1000 = 90 + glider.mesh.position.z / 10000 * 360;
+  const altAngle1000 = 90 + altitude / 10000 * 360;
   drawDivs(ctx, half-30, 0, altAngle1000, altAngle1000, 1);
 
   ctx.restore();
 }
 
-class Instruments {
+
+export class Instruments {
   constructor() {
     this.show = true;
 
@@ -247,7 +248,7 @@ class Instruments {
     this.preSpeed = preDrawSpeed(half);
   }
   
-  update() {
+  update(glider) {
     const canvas = document.getElementById('instrumentCanvas');
     const ctx = canvas.getContext('2d');
     
@@ -257,14 +258,12 @@ class Instruments {
     const half = height / 2;
     const deltax = width / 4;
     
-    drawSpeed(ctx, half, 0*deltax, this.preSpeed);
-    drawVario(ctx, half, 1*deltax);
-    drawLevel(ctx, half, 2*deltax);
-    drawAltim(ctx, half, 3*deltax);
+    drawSpeed(ctx, half, 0*deltax, this.preSpeed, glider.speed);
+    drawVario(ctx, half, 1*deltax, glider.lift);
+    drawLevel(ctx, half, 2*deltax, glider.roll, glider.pitch);
+    drawAltim(ctx, half, 3*deltax, glider.mesh.position.z);
   
     glider.updateInstrumentTextures();
     canvas.hidden = camera.mode == 0 || !this.show;
   }
 }
-
-export const instruments = new Instruments();

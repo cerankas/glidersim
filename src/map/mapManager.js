@@ -1,8 +1,7 @@
 import { MapCell } from '@/map/mapCell';
-import { miniMap } from '@/map/miniMap';
-import { mapMaterial } from '@/scene/materials';
 
-class MapManager {
+
+export class MapManager {
   constructor() {
     // this.cellSize = 1000;
     this.cells = [];
@@ -12,11 +11,10 @@ class MapManager {
     this.scene = scene;
   }
 
-  update(gliderX,gliderY) {
+  update(gliderX, gliderY, range) {
     const t0 = Date.now();
-    const range = miniMap.range;
 
-    this.cellSize = miniMap.range;
+    this.cellSize = range;
 
     const x0 = Math.floor(gliderX / this.cellSize + .5);
     const y0 = Math.floor(gliderY / this.cellSize + .5);
@@ -46,5 +44,3 @@ class MapManager {
     }
   }
 }
-
-export const mapManager = new MapManager();

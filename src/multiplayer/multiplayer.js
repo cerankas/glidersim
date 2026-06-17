@@ -1,12 +1,17 @@
-import { firebase } from '@/multiplayer/firebase';
-import { peerServer } from '@/multiplayer/peerServer';
-import { glider as mainGlider, Glider } from '@/glider/glider';
+import { Firebase } from '@/multiplayer/firebase';
+import { PeerServer } from '@/multiplayer/peerServer';
 import { wind } from '@/map/wind';
 import { gui } from '@/control/gui';
 import { devlog } from '@/utils/devlog';
 
-class Multiplayer {
-  constructor() {
+
+export class Multiplayer {
+  constructor(glider) {
+    this.glider = glider;
+
+    this.firebase = new Firebase();
+    this.peerServer = new PeerServer();
+
     this.gliders = [];
     this.nick = localStorage.getItem('nick') || 'anonymous';
     this.lastbroadcast = 0;
@@ -21,52 +26,52 @@ class Multiplayer {
   }
 
   connect() {
-    peerServer.broadcast(
+    this.peerServer.broadcast(
       this.connectFirebase.bind(this),
     );
   }
 
   connectFirebase() {
-    firebase.connect(peerServer.peer.id, this.nick, (peers) => {
+    this.firebase.connect(this.peerServer.peer.id, this.nick, this.glider, (peers) => {
       devlog('firebase get:', Object.keys(peers).length);
       for (let id in peers) {
         const peer = peers[id];
-        if (id == peerServer.peer.id) continue;
+        if (id == this.peerServer.peer.id) continue;
         if (Date.now() - peer.time > 60 * 60 * 1000) continue;
         devlog('multiplayer try connect', id, peer.date, peer.nick)
-        peerServer.connect(id);
+        this.peerServer.connect(id);
       }
     });
   }
 
   broadcast(t) {
     this.lastbroadcast = t;
-    firebase.broadcast();
+    this.firebase.broadcast(this.glider);
   }
 
-  update(t) {
-    if (!peerServer.peer || !peerServer.peer.id) return;
+  update(t, cellManager) {
+    if (!this.peerServer.peer || !this.peerServer.peer.id) return;
     
     if (this.lastbroadcast + 60 * 1000 < t) {
       this.broadcast(t);
     }
 
-    const conns = peerServer.connections;
+    const conns = this.peerServer.connections;
 
     for (let conn of conns) {
       if (!conn.open) continue;
-      const q = mainGlider.mesh.quaternion;
+      const q = this.glider.mesh.quaternion;
       const status = {
         nick: this.nick,
-        position: mainGlider.mesh.position,
+        position: this.glider.mesh.position,
         quaternion: {x:q.x, y:q.y, z:q.z, w:q.w},
-        speed: mainGlider.speed,
+        speed: this.glider.speed,
         time: t,
         systime: Date.now()
       };
       conn.send(status);
       conn.sent++;
-      peerServer.sent++;
+      this.peerServer.sent++;
       gui.updateDisplay();
     }
 
@@ -82,7 +87,7 @@ class Multiplayer {
       }
       else {
         devlog('adding peer glider', peer.nick)
-        const glider = mainGlider.clone();
+        const glider = this.glider.clone();
         glider.peer = peer;
         this.gliders[conn.peer] = glider;
         this.scene.add(glider.mesh);
@@ -104,8 +109,8 @@ class Multiplayer {
       glider.speed = glider.peer.speed;
       
       const dt = (Date.now() - glider.peer.systime) / 1000;
-      const windLift = wind.calculateLift(glider.mesh.position);
-      glider.move(dt, windLift);
+      const windLift = wind.calculateLift(glider.mesh.position, cellManager);
+      glider.move(dt, windLift, false, this.glider);
     }
 
     for (let id of outdatedGliders) {
@@ -116,5 +121,3 @@ class Multiplayer {
   }
 
 }
-
-export const multiplayer = new Multiplayer();

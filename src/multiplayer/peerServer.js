@@ -2,7 +2,8 @@ import { Peer } from "peerjs";
 import { gui } from '@/control/gui';
 import { devlog } from "@/utils/devlog";
 
-class PeerServer {
+
+export class PeerServer {
   constructor() {
     this.peer = null;
     this.connections = [];
@@ -46,7 +47,7 @@ class PeerServer {
     this.lastActive = Date.now();
     data.received = this.received; 
     data.sent = this.sent; 
-    peerServer.received++; 
+    // peerServer.received++; 
   }
 
   connect(peerId) {
@@ -59,5 +60,3 @@ class PeerServer {
     devlog('peer try connect', peerId, this.connections)
   }
 }
-
-export const peerServer = new PeerServer();
