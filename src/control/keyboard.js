@@ -61,10 +61,10 @@ export class Keyboard {
     if (e.key == 'n') {
     	this.game.miniMap.north ^= true;
     }
-    // if (e.key == 'o') {
-    //   this.game.mouse.controlEnabled ^= true;
-    //   this.game.camera.orbitingEnabled = !this.game.mouse.controlEnabled;
-    // }
+    if (e.key == 'o') {
+      this.game.mouse.controlEnabled ^= true;
+      this.game.camera.orbitingEnabled = !this.game.mouse.controlEnabled;
+    }
     if (e.key == 'a') {
       this.game.toggleAudioVario();
     }

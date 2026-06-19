@@ -6,6 +6,7 @@ import { FreeView } from './freeView';
 
 
 export class Camera extends THREE.PerspectiveCamera {
+  orbitingEnabled = true;
   views = [new CockpitView(), new TailView(), new FollowView(), new FreeView()];
   view = this.views[2];
   
@@ -15,12 +16,14 @@ export class Camera extends THREE.PerspectiveCamera {
 
   bindInput(domElement) {
     domElement.addEventListener('pointermove', e => {
+      if (!this.orbitingEnabled) return;
       if (e.buttons != 1) return;
       const span = document.body.clientHeight / 3;
       this.view.onPan(e.movementX / span, e.movementY / span);
     });
 
     domElement.addEventListener('pointerdown', e => {
+      if (!this.orbitingEnabled) return;
       if (e.button == 2) {
         this.resetOrbiting();
         e.preventDefault();
