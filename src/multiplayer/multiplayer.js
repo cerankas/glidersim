@@ -1,6 +1,5 @@
 import { Firebase } from '@/multiplayer/firebase';
 import { PeerServer } from '@/multiplayer/peerServer';
-import { wind } from '@/map/wind';
 import { gui } from '@/control/gui';
 import { devlog } from '@/utils/devlog';
 
@@ -49,7 +48,7 @@ export class Multiplayer {
     this.firebase.broadcast(this.glider);
   }
 
-  update(t, cellManager) {
+  update(t, cellManager, wind, scene, camera) {
     if (!this.peerServer.peer || !this.peerServer.peer.id) return;
     
     if (this.lastbroadcast + 60 * 1000 < t) {
@@ -110,7 +109,7 @@ export class Multiplayer {
       
       const dt = (Date.now() - glider.peer.systime) / 1000;
       const windLift = wind.calculateLift(glider.mesh.position, cellManager);
-      glider.move(dt, windLift, false, this.glider);
+      glider.peerMove(dt, windLift, this.glider, scene, camera);
     }
 
     for (let id of outdatedGliders) {

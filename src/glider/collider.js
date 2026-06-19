@@ -1,9 +1,8 @@
 import * as THREE from 'three';
-import { dustBallMaterial, terrainMaterial, waterMaterial } from '@/scene/materials';
+import { dustBallMaterial, terrainMaterial } from '@/scene/materials';
 import { playTreeSound } from '@/sound/treeSound';
 import { playGroundSound } from '@/sound/groundSound';
 import { playRoofSound } from '@/sound/roofSound';
-import { water } from '@/objects/water';
 import { playWaterSound } from '@/sound/waterSound';
 
 
@@ -32,7 +31,7 @@ export class Collider {
     });
   }
 
-  update(dt, cellManager, glider) {
+  update(dt, cellManager, glider, water) {
     this.supported = false;
     
     const directions = [
@@ -64,13 +63,6 @@ export class Collider {
           const c = cellManager.cells[xy];
           const i = this.raycaster.intersectObject(c[object], true);
           if (i.length) {
-            // const rnd = () => Math.random() * 15;
-            // this.balls.push({
-            //   position: i[0].point.clone(), 
-            //   scale: 2, 
-            //   speed: glider.forward().multiplyScalar(glider.speed).add(new THREE.Vector3(rnd(), rnd(), rnd() + 5)),
-            //   color: object == 'mesh' ? terrainMaterial.getPixelColor(i[0].point.x, i[0].point.y) : (object == 'trees' ? 0x7aa21d : 0xc00000),
-            // });
             this.addBall(i[0].point.clone(), object == 'mesh' ? terrainMaterial.getPixelColor(i[0].point.x, i[0].point.y) : (object == 'trees' ? 0x7aa21d : 0xc00000), glider);
             
             if (object == 'mesh') {

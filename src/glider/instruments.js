@@ -1,13 +1,35 @@
-import * as THREE from 'three';
-import { camera } from "@/scene/camera";
+export class Instruments {
+  constructor() {
+    this.show = true;
+
+    const half = document.getElementById('instrumentCanvas').height / 2;
+
+    this.preSpeed = preDrawSpeed(half);
+  }
+  
+  update(glider, isCockpitCamera, isTailCamera) {
+    const canvas = document.getElementById('instrumentCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    
+    const half = height / 2;
+    const deltax = width / 4;
+    
+    drawSpeed(ctx, half, 0*deltax, this.preSpeed, glider.speed);
+    drawVario(ctx, half, 1*deltax, glider.lift);
+    drawLevel(ctx, half, 2*deltax, glider.roll, glider.pitch, isCockpitCamera || isTailCamera);
+    drawAltim(ctx, half, 3*deltax, glider.mesh.position.z);
+  
+    glider.updateInstrumentTextures();
+    canvas.hidden = isCockpitCamera || !this.show;
+  }
+}
 
 
 function lerp(a1, a2, t) {
   return a1 + (a2 - a1) * t;
-}
-
-function lerp5(a1, a2, b1, b2, b) {
-  return lerp(a1, a2, (b - b1) / (b2 - b1));
 }
 
 function anglePos(radius, angle) {
@@ -161,11 +183,11 @@ function drawVario(ctx, half, x0, lift) {
   ctx.restore();
 }
 
-function drawLevel(ctx, half, x0, roll, pitch) {
+function drawLevel(ctx, half, x0, roll, pitch, rotatedCamera) {
   ctx.save();
   ctx.translate(x0+half, half);
   ctx.clearRect(-half, -half, 2*half, 2*half);
-  if ([0,1].includes(camera.mode)) ctx.rotate(-roll);
+  if (rotatedCamera) ctx.rotate(-roll);
   ctx.beginPath();
   ctx.lineWidth = 1;
   ctx.fillStyle = 'skyBlue';
@@ -236,34 +258,4 @@ function drawAltim(ctx, half, x0, altitude) {
   drawDivs(ctx, half-30, 0, altAngle1000, altAngle1000, 1);
 
   ctx.restore();
-}
-
-
-export class Instruments {
-  constructor() {
-    this.show = true;
-
-    const half = document.getElementById('instrumentCanvas').height / 2;
-
-    this.preSpeed = preDrawSpeed(half);
-  }
-  
-  update(glider) {
-    const canvas = document.getElementById('instrumentCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
-    
-    const half = height / 2;
-    const deltax = width / 4;
-    
-    drawSpeed(ctx, half, 0*deltax, this.preSpeed, glider.speed);
-    drawVario(ctx, half, 1*deltax, glider.lift);
-    drawLevel(ctx, half, 2*deltax, glider.roll, glider.pitch);
-    drawAltim(ctx, half, 3*deltax, glider.mesh.position.z);
-  
-    glider.updateInstrumentTextures();
-    canvas.hidden = camera.mode == 0 || !this.show;
-  }
 }

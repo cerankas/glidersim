@@ -1,9 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader';
-import { wind } from '@/map/wind';
 import { createTextSprite } from '@/objects/sprite';
-import { scene } from '@/scene/scene';
-import { camera } from '@/scene/camera';
 
 
 export class Glider {
@@ -194,7 +191,7 @@ export class Glider {
     return Math.max(0, this.speed * 3.6 - 280)**2 / 20**2;
   }
 
-  move(dt, airLift, supported, referenceGlider) {
+  move(dt, airLift, wind, supported) {
     for (let a = 0; a < 3; a++) {
       const control = this.rotationControl[a];
       let delta = this.rotationDelta[a];
@@ -274,19 +271,21 @@ export class Glider {
     this.mesh.updateMatrixWorld();
     this.updateAttitude();
 
-    if (this.peer) {
-      if (!this.sprite) {
-        this.sprite = createTextSprite(this.peer.nick);
-        scene.add(this.sprite);
-      }
-      const dst = this.sprite.position.clone().sub(camera.position).length();
-      this.sprite.position.copy(this.mesh.position.clone().add(camera.up.clone().multiplyScalar(1 + dst / 100)));
-      this.sprite.scale.copy(this.sprite.initScale.clone().multiplyScalar(dst / 50));
-      this.sprite.setText(`${this.peer.nick} ${this.mesh.position.clone().sub(referenceGlider.mesh.position).length()|0}m`)
-    }
-
     this.rotationControl = [0,0,0];
     this.accelerateControl = 0;
     this.brakeControl = 0;
+  }
+
+  peerMove(dt, airLift, referenceGlider, scene, camera) {
+    this.move(dt, airLift, false);
+    if (!this.peer) throw Error();
+    if (!this.sprite) {
+      this.sprite = createTextSprite(this.peer.nick);
+      scene.add(this.sprite);
+    }
+    const dst = this.sprite.position.clone().sub(camera.position).length();
+    this.sprite.position.copy(this.mesh.position.clone().add(camera.up.clone().multiplyScalar(1 + dst / 100)));
+    this.sprite.scale.copy(this.sprite.initScale.clone().multiplyScalar(dst / 50));
+    this.sprite.setText(`${this.peer.nick} ${this.mesh.position.clone().sub(referenceGlider.mesh.position).length()|0}m`);
   }
 }

@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { guiSettings } from '@/control/gui';
 
-class Wind {
+
+export class Wind {
   constructor() {
     this.direction = 90; // deg
     this.speed = 30; // km/h
@@ -14,7 +15,6 @@ class Wind {
     folder.add(this,'liftFactor',0,5).name('lift factor');    
   }
   
-
   vector() { // m/s
     const wind = new THREE.Vector3(0,this.speed/3.6,0);
     wind.applyAxisAngle(new THREE.Vector3(0,0,1), this.direction * Math.PI / 180);
@@ -62,7 +62,4 @@ class Wind {
 
     return this.liftFactor / 3.6 * this.speed * sumLifts;
   }
-
 }
-
-export const wind = new Wind();

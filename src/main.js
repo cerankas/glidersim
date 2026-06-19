@@ -1,14 +1,13 @@
 import * as THREE from 'three';
 import Stats from 'three/addons/libs/stats.module';
 import { Glider } from '@/glider/glider';
-import { wind } from '@/map/wind';
+import { Wind } from '@/map/wind';
 import { setShadowCameraFrustum } from '@/scene/shadow';
 import { AudioVario } from '@/sound/audioVario';
 import { AirflowSound } from '@/sound/airSound';
-import { camera } from '@/scene/camera';
+import { Camera } from '@/scene/camera';
 import { gui } from '@/control/gui';
-import { scene } from '@/scene/scene';
-import { fog, setFog } from '@/scene/fog';
+import { Scene } from '@/scene/scene';
 import { Instruments } from '@/glider/instruments';
 import { Task } from '@/control/task';
 import { MiniMap } from '@/map/miniMap';
@@ -17,9 +16,9 @@ import { MapManager } from '@/map/mapManager';
 import { Multiplayer } from '@/multiplayer/multiplayer';
 import { getGamepadState } from '@/control/gamepad';
 import { Collider } from '@/glider/collider';
-import { water } from '@/objects/water';
 
 
+const wind = new Wind();
 const task = new Task();
 const collider = new Collider();
 const glider = new Glider();
@@ -31,6 +30,8 @@ const miniMap = new MiniMap();
 
 const multiplayer = new Multiplayer(glider);
 
+const scene = new Scene();
+const camera = new Camera();
 
 
 console.log(`glidersim app build ${__BUILD_TIMESTAMP__}`);
@@ -86,7 +87,7 @@ mapManager.setScene(miniMap.scene);
 
 camera.setup(initpos);
 
-setFog();
+scene.setupCamera(camera);
 
 const renderer = new THREE.WebGLRenderer({antialias:true, logarithmicDepthBuffer:true });
 
@@ -131,7 +132,6 @@ window.addEventListener('resize', () => {
 
 task.toScene(scene);
 collider.toScene(scene);
-scene.add(water);
 
 camera.bindInput(renderer.domElement);
 
@@ -328,20 +328,20 @@ function animate(t) {
 
 	const windLift = wind.calculateLift(glider.mesh.position, cellManager);
 
-	glider.move(dt, windLift, collider.supported);
+	glider.move(dt, windLift, wind, collider.supported);
 
-	water.position.x = glider.mesh.position.x;
-	water.position.y = glider.mesh.position.y;
+	scene.water.position.x = glider.mesh.position.x;
+	scene.water.position.y = glider.mesh.position.y;
 
-	multiplayer.update(t, cellManager);
+	multiplayer.update(t, cellManager, wind, scene, camera);
 	
 	task.update(glider.mesh.position, glider.time);
 
-	water.material.uniforms['time'].value -= dt;
+	if (!glider.paused && scene.water.material.uniforms?.['time']?.value != undefined) scene.water.material.uniforms['time'].value -= dt;
 
 	camera.update(glider);
 
-	instruments.update(glider);
+	instruments.update(glider, camera.view.name == 'cockpit', camera.view.name == 'tail');
 
 	setShadowCameraFrustum(directionalLight, glider.mesh);
 	
@@ -379,7 +379,7 @@ function animate(t) {
 	cellManager.update(glider.mesh.position.x, glider.mesh.position.y);
 	mapManager.update(glider.mesh.position.x, glider.mesh.position.y, miniMap.range);
 
-	collider.update(dt, cellManager, glider);
+	if (!glider.paused) collider.update(dt, cellManager, glider, scene.water);
 
 	if (ui.stats) {
 		let log = [`build ${__BUILD_TIMESTAMP__}`, `id ${multiplayer.peerServer.peerId}`, `${multiplayer.nick}, sent: ${multiplayer.peerServer.sent}, rec: ${multiplayer.peerServer.received}`];
@@ -425,7 +425,7 @@ glider.load(initpos, (glider) => {
 	scene.add(glider.mesh);
 	directionalLight.target = glider.mesh;
 	task.generate();
-	task.resetGliderPosition(glider);
+	task.resetGliderPosition(glider, camera);
 	instruments.update(glider);
 	renderer.setAnimationLoop(animate);
 	multiplayer.connect();

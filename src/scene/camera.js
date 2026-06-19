@@ -4,7 +4,8 @@ import { TailView } from './tailView';
 import { FollowView } from './followView';
 import { FreeView } from './freeView';
 
-class Camera extends THREE.PerspectiveCamera {
+
+export class Camera extends THREE.PerspectiveCamera {
   views = [new CockpitView(), new TailView(), new FollowView(), new FreeView()];
   view = this.views[2];
   
@@ -53,5 +54,3 @@ class Camera extends THREE.PerspectiveCamera {
     this.view.update(this, glider);
   }
 }
-
-export const camera = new Camera();

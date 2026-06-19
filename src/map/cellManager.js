@@ -1,5 +1,4 @@
 import { Cell } from '@/map/cell';
-import { fog } from '@/scene/fog';
 
 
 export class CellManager {

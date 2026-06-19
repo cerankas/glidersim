@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { terrainHeight } from '@/map/terrain';
 import { seededRandom } from '@/utils/random';
 import { gui } from '@/control/gui';
-import { camera } from '@/scene/camera';
 import { playCheckpointSound } from '@/sound/checkpointSound';
 
 
@@ -87,7 +86,7 @@ export class Task {
     gui.updateDisplay();
   }
 
-  resetGliderPosition(glider) {
+  resetGliderPosition(glider, camera) {
     if (glider == undefined) return;
     if (!glider.mesh) return;
     glider.mesh.position.x = this.x0;
