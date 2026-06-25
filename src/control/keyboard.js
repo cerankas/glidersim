@@ -16,14 +16,26 @@ export class Keyboard {
     const newPress = (key) => { return e.key == key && !this.keys[key]; };
     
     if (newPress('Escape')) {
-      if (gui._closed) {
-        gui.open();
-        gui.domElement.children[0].focus();
+      
+      if (this.game.isHelpVisible()) {
+        this.game.toggleHelp();
+        return;
       }
-      else {
-        gui.close();
-        document.activeElement.blur();
+      
+      const menu = document.getElementById("menu");
+      if (!menu.open) {
+        menu.showModal();
+        e.preventDefault();
       }
+
+      // if (gui._closed) {
+      //   gui.open();
+      //   gui.domElement.children[0].focus();
+      // }
+      // else {
+      //   gui.close();
+      //   document.activeElement.blur();
+      // }
     }
   
     if (document.activeElement != document.body) return;

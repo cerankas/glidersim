@@ -6,18 +6,31 @@
 		<title>glider simulator</title>
 		<style>
 			body { margin: 0; }
+			#menu, #menu button { font-size: xx-large;}
 		</style>		
 	</head>
 	<body style="font-family: Arial, Helvetica, sans-serif; font-size: small;">
+		
 		<div id="logDiv" style="position: absolute; top:50px; z-index: 100; pointer-events: none;">loading...</div>
+		
 		<canvas id="mapCanvas" style="position: absolute; bottom: 0; z-index: 100; color: transparent; pointer-events: none;"></canvas>
+		
 		<div style = "position:absolute; bottom:0; width: 100%; text-align:center; pointer-events: none;">
 			<canvas id="instrumentCanvas" style="z-index: 100; color: transparent; pointer-events: none;" width="600" height="120"></canvas>
 		</div>
-		<div id="help" style="position: absolute; z-index: 500; inset:8vmin; padding:8vmin; opacity: 90%; background-color: white; text-align: center;" hidden="true">
+
+		<dialog id="menu">
+			<div style="display:flex; flex-direction: column; gap:1em;">
+				<button id="menuContinue" style="display:none">Continue</button>
+				<button id="menuSelectChallenge">Select Challenge</button>
+				<button id="menuEditChallenge">Edit Challenge</button>
+			</div>
+		</dialog>
+		
+		<div id="help" style="position: absolute; left: 50%; top: 50%; transform:translate(-50%, -50%); z-index: 500; padding:5vmin; opacity: 90%; background-color: white; text-align: center; font-size: large;" hidden="true">
 			<div style="display: flex; flex-direction: column; align-items: center">
 				<h2>Keys</h2>
-				<div style="display: flex; flex-direction: row; gap: 8vmin;">
+				<div style="display: flex; flex-direction: row; gap: 5vmin;">
 					<div style="display: flex; text-align: left;">
 						up/down arrow - elevator<br>
 						left/right arrow - ailerons<br>
@@ -46,6 +59,8 @@
 				<a href="https://github.com/cerankas/glidersim" target="_blank">Source code on github</a>
 			</div>
 		</div>
+		
 		<script type="module" src="/src/main.js"></script>
+	
 	</body>
 </html>

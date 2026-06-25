@@ -105,6 +105,8 @@ export class Game {
     }
   }
 
+  isHelpVisible = () => !document.getElementById("help").hidden;
+
   toggleHelp = () => {
     const help = document.getElementById("help");
     help.hidden = !help.hidden;

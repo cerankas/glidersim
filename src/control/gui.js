@@ -10,4 +10,4 @@ gui.updateDisplay = () => {
 }
 export const guiSettings = gui.addFolder('Settings').close();
 gui.close();
-// gui.hide();
+gui.hide();
