@@ -80,7 +80,8 @@ export class Game {
     this.glider.load(initpos, (glider) => {
       this.scene.add(glider.mesh);
       this.scene.directionalLight.target = glider.mesh;
-      this.task.generate();
+      const tasks = Task.listTasksInLocalStorage();
+      this.task.load(tasks[tasks.length-1] ?? '{}');
       this.task.resetGliderPosition(glider, this.camera);
       this.instruments.update(glider);
       this.renderer.setAnimationLoop(this.animate);

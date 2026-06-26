@@ -47,37 +47,39 @@ export class MiniMap {
     ctx.save();
     ctx.translate(size/2, size/2);
     {
-      // visited task checkpoints
-      ctx.save();
-      if (!this.north) ctx.rotate(-glider.yaw);
-      const x0 = scale * glider.mesh.position.x;
-      const y0 = -scale * glider.mesh.position.y;
-      const t = task;
-      ctx.strokeStyle = '#c0c0c0';
-      for (let i = 0; i < t.current; i++) {
-        const x = scale * t.points[i].x - x0;
-        const y = -scale * t.points[i].y - y0;
-        ctx.beginPath();
-        ctx.arc(x, y, t.radius * scale, 0, 2*Math.PI);
-        ctx.stroke();
+      if (task.points.length) {
+        // visited task checkpoints
+        ctx.save();
+        if (!this.north) ctx.rotate(-glider.yaw);
+        const x0 = scale * glider.mesh.position.x;
+        const y0 = -scale * glider.mesh.position.y;
+        const t = task;
+        ctx.strokeStyle = '#c0c0c0';
+        for (let i = 0; i < t.current; i++) {
+          const x = scale * t.points[i].x - x0;
+          const y = -scale * t.points[i].y - y0;
+          ctx.beginPath();
+          ctx.arc(x, y, t.radius * scale, 0, 2*Math.PI);
+          ctx.stroke();
+        }
+  
+        // task path
+        let prev = [0,0];
+        for (let i = t.current; i < t.points.length; i++) {
+          const x = scale * t.points[i].x - x0;
+          const y = -scale * t.points[i].y - y0;
+          ctx.beginPath();
+          ctx.moveTo(...prev);
+          ctx.strokeStyle = i == t.current ? '#ff0000' : '#0000ff';
+          ctx.lineTo(x, y);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(x, y, t.radius * scale, 0, 2*Math.PI);
+          ctx.stroke();
+          prev = [x,y];
+        }
+        ctx.restore();
       }
-
-      // task path
-      let prev = [0,0];
-      for (let i = t.current; i < t.points.length; i++) {
-        const x = scale * t.points[i].x - x0;
-        const y = -scale * t.points[i].y - y0;
-        ctx.beginPath();
-        ctx.moveTo(...prev);
-        ctx.strokeStyle = i == t.current ? '#ff0000' : '#0000ff';
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(x, y, t.radius * scale, 0, 2*Math.PI);
-        ctx.stroke();
-        prev = [x,y];
-      }
-      ctx.restore();
 
       // wind symbol
       ctx.save();
@@ -157,8 +159,10 @@ export class MiniMap {
     ctx.restore();
 
     // task
-    ctx.fillText(`dst: ${Math.sqrt(task.toTarget.x**2 + task.toTarget.y**2)|0} m`,5,10);
-    ctx.fillText(`Δh: ${-task.toTarget.z|0} m`,5,20);
+    if (task.toTarget) {
+      ctx.fillText(`dst: ${Math.sqrt(task.toTarget.x**2 + task.toTarget.y**2)|0} m`,5,10);
+      ctx.fillText(`Δh: ${-task.toTarget.z|0} m`,5,20);
+    }
 
     // position
     const x = glider.mesh.position.x;
