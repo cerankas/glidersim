@@ -14,6 +14,8 @@ export class MapManager {
   update(gliderX, gliderY, range) {
     const t0 = Date.now();
 
+    range = Math.floor(range / 100) * 50;
+
     this.cellSize = range;
 
     const x0 = Math.floor(gliderX / this.cellSize + .5);

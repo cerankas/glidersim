@@ -1,6 +1,6 @@
 export class Instruments {
   constructor() {
-    this.show = true;
+    this.visible = true;
 
     const half = document.getElementById('instrumentCanvas').height / 2;
 
@@ -23,7 +23,7 @@ export class Instruments {
     drawAltim(ctx, half, 3*deltax, glider.mesh.position.z);
   
     glider.updateInstrumentTextures();
-    canvas.hidden = isCockpitCamera || !this.show;
+    canvas.hidden = isCockpitCamera || !this.visible;
   }
 }
 

@@ -62,13 +62,13 @@ export class Keyboard {
       this.game.toggleHelp();
     }
     if (e.key == 'c') {
-      this.game.camera.changeMode();
+      this.game.camera.setNextMode();
     }
     if (e.key == 'i') {
-    	this.game.instruments.show ^= true;
+    	this.game.instruments.visible ^= true;
     }
     if (e.key == 'm') {
-    	this.game.miniMap.show ^= true;
+    	this.game.miniMap.visible ^= true;
     }
     if (e.key == 'n') {
     	this.game.miniMap.north ^= true;

@@ -7,6 +7,7 @@ import { FreeView } from './freeView';
 
 export class Camera extends THREE.PerspectiveCamera {
   orbitingEnabled = true;
+  dragging = false;
   views = [new CockpitView(), new TailView(), new FollowView(), new FreeView()];
   view = this.views[2];
   
@@ -15,31 +16,43 @@ export class Camera extends THREE.PerspectiveCamera {
   }
 
   bindInput(domElement) {
-    domElement.addEventListener('pointermove', e => {
-      if (!this.orbitingEnabled) return;
-      if (e.buttons != 1) return;
-      const span = document.body.clientHeight / 3;
-      this.view.onPan(e.movementX / span, e.movementY / span);
-    });
+    domElement.addEventListener('pointerdown', this.onPointerDown);
+    domElement.addEventListener('pointerup', this.onPointerUp);
+    domElement.addEventListener('pointermove', this.onPointerMove);
+    domElement.addEventListener('wheel', this.onWheel);
+  }
 
-    domElement.addEventListener('pointerdown', e => {
-      if (!this.orbitingEnabled) return;
-      if (e.button == 2) {
-        this.resetOrbiting();
-        e.preventDefault();
-      }
-    });
+  onPointerDown = (e) => {
+    if (!this.orbitingEnabled) return;
+    if (e.button == 0) {
+      this.dragging = true;
+    }
+    if (e.button == 2) {
+      this.resetOrbiting();
+      e.preventDefault();
+    }
+  }
 
-    domElement.addEventListener('wheel', e => {
-      this.view.onZoom(1.1 ** (e.deltaY > 0 ? 1 : -1));
-    });
+  onPointerUp = (e) => {
+    this.dragging = false;
+  }
+
+  onPointerMove = (e) => {
+    if (!this.orbitingEnabled) return;
+    if (!this.dragging) return;
+    const span = document.body.clientHeight / 3;
+    this.view.onPan(e.movementX / span, e.movementY / span);
+  }
+
+  onWheel = (e) => {
+    this.view.onZoom(1.1 ** (e.deltaY > 0 ? 1 : -1));
   }
 
   resetOrbiting() {
     this.view.reset();
   }
 
-  changeMode() {
+  setNextMode() {
     const viewIndex = this.views.indexOf(this.view);
     this.setMode((viewIndex + 1) % this.views.length);
   }

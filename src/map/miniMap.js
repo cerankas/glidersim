@@ -1,51 +1,123 @@
 import * as THREE from 'three';
+import { ResizeHandle } from '@/ui/resizeHandle';
 
 
 export class MiniMap {
   constructor() {
-    this.size = 300;
-    this.range = 2000;
+    this.scale = 4000; // length in m corresponding to min(map width, map height)
     this.north = false;
-    this.show = true;
 
     this.canvas = document.getElementById('mapCanvas');
-    this.canvas.width = this.size;
-    this.canvas.height = this.size;
+    this.canvas.width = parseFloat(localStorage.getItem('mapWidth')) || window.innerHeight / 3;
+    this.canvas.height = parseFloat(localStorage.getItem('mapHeight')) || window.innerHeight / 3;
     
     this.scene = new THREE.Scene();
     this.scene.add(new THREE.AmbientLight(0xffffff, Math.PI * 0.25));
             
-    this.cam = new THREE.OrthographicCamera(this.range, -this.range, -this.range, this.range, -10000, 10000);
+    this.cam = new THREE.OrthographicCamera();
+    this.cam.near = -10000;
+    this.cam.far = 10000;
     this.cam.up.set(0,-1,0);
     this.cam.position.set(0,0,1);
     this.cam.lookAt(0,0,0);
     this.cam.updateProjectionMatrix();
+
+    this.updateCameraFrustum();
+
+    this.resizeHandle = new ResizeHandle(
+      {
+        x: this.width, 
+        y: this.height, 
+        ...this.resizingRange()
+      }, 
+      this.setScreenSize
+    );
+
+    window.addEventListener('resize', this.onWindowResize);
+
+    this.visible = JSON.parse(localStorage.getItem('mapVisible') | 'true');
+  }
+
+  get width() { return this.canvas.width; }
+  get height() { return this.canvas.height; }
+
+  get visible() { return this._visible; }
+
+  set visible(state) {
+    this._visible = state;
+    this.resizeHandle.handle.style.visibility = state ? 'visible' : 'hidden';
+    localStorage.setItem('mapVisible', state);
+  }
+
+  onWindowResize = () => {
+    this.resizeHandle.setRange(this.resizingRange());
+    this.setScreenSize(this.resizeHandle.x, this.resizeHandle.y);
+  }
+
+  mapDataRange() {
+    const min = Math.min(this.width, this.height);
+    const max = Math.max(this.width, this.height);
+    const range = this.scale * max / min;
+    return range;
+  }
+
+  resizingRange() {
+    return {
+      minx: 100,
+      miny: 100,
+      maxx: window.innerWidth,
+      maxy: window.innerHeight,
+    }
+  }
+
+  setScreenSize = (width, height) => {
+    this.canvas.width = width;
+    this.canvas.height = height;
+    localStorage.setItem('mapWidth', width);
+    localStorage.setItem('mapHeight', height);
+    this.updateCameraFrustum();
   }
   
   changeScale(factor) {
-    this.range = Math.min(64000, Math.max(500, this.range * factor));
-    this.cam.left = this.range;
-    this.cam.right = -this.range;
-    this.cam.top = -this.range;
-    this.cam.bottom = this.range;
+    this.scale = Math.min(256000, Math.max(2000, this.scale * factor));
+    this.updateCameraFrustum();
+  }
+
+  updateCameraFrustum() {
+    const size = Math.min(this.width, this.height);
+
+    const frustumWidth = this.width / size * this.scale;
+    const frustumHeight = this.height / size * this.scale;
+
+    this.cam.left = frustumWidth / 2;
+    this.cam.right = -frustumWidth / 2;
+    this.cam.top = -frustumHeight / 2;
+    this.cam.bottom = frustumHeight / 2;
   }
 
   drawOverlay(glider, wind, task, multiplayerGliders) {
     const ctx = this.canvas.getContext('2d');
-    const size = this.size;
-    const scale = this.size / this.range / 2;
 
-    ctx.clearRect(0, 0, size, size);
+    const size = Math.min(this.width, this.height);
+    
+    const scale = size / this.scale;
 
-    ctx.font = 'x-small Arial, Helvetica, sans-serif';
+    ctx.clearRect(0, 0, this.width, this.height);
+
+    const fontSize = 300 * Math.min(this.width, this.height) / Math.min(window.innerWidth, window.innerHeight);
+
+    ctx.font = `${fontSize}% Arial, Helvetica, sans-serif`;
     ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
+    ctx.textBaseline = 'bottom';
+
+    const textMetrics = ctx.measureText('');
+    const textHeight = textMetrics.fontBoundingBoxAscent + textMetrics.fontBoundingBoxDescent;
 
     ctx.fillStyle = 'white'
     ctx.strokeStyle = 'white';
     
     ctx.save();
-    ctx.translate(size/2, size/2);
+    ctx.translate(this.width/2, this.height/2);
     {
       if (task.points.length) {
         // visited task checkpoints
@@ -142,7 +214,7 @@ export class MiniMap {
 
     // north symbol
     ctx.save();
-    ctx.translate(size - 15, 15);
+    ctx.translate(this.width - 15, 15);
     if (!this.north) ctx.rotate(-glider.yaw);
     ctx.beginPath();
     ctx.lineWidth = 1.5;
@@ -160,20 +232,20 @@ export class MiniMap {
 
     // task
     if (task.toTarget) {
-      ctx.fillText(`dst: ${Math.sqrt(task.toTarget.x**2 + task.toTarget.y**2)|0} m`,5,10);
-      ctx.fillText(`Δh: ${-task.toTarget.z|0} m`,5,20);
+      ctx.fillText(`dst: ${Math.sqrt(task.toTarget.x**2 + task.toTarget.y**2)|0} m`,5,textHeight);
+      ctx.fillText(`Δh: ${-task.toTarget.z|0} m`,5,2*textHeight);
     }
 
     // position
     const x = glider.mesh.position.x;
     const y = glider.mesh.position.y;
-    ctx.fillText(`${(Math.abs(y/1000)).toFixed(3)} ${y >= 0 ? 'N' : 'S'}`, 5, size - 15);
-    ctx.fillText(`${(Math.abs(x/1000)).toFixed(3)} ${x >= 0 ? 'E' : 'W'}`, 5, size - 5);
+    ctx.fillText(`${(Math.abs(y/1000)).toFixed(3)} ${y >= 0 ? 'N' : 'S'}`, 5, this.height - 1 * textHeight);
+    ctx.fillText(`${(Math.abs(x/1000)).toFixed(3)} ${x >= 0 ? 'E' : 'W'}`, 5, this.height - 0 * textHeight);
 
     // map scale indicator
-    const half = size / 8;
+    const half = size / 8; // half of the map scale indicator width
     ctx.save();
-    ctx.translate(size - half - 5, size - 5);
+    ctx.translate(this.width - half - 5, this.height - 5);
     ctx.beginPath();
     ctx.lineWidth = 1.5;
     ctx.moveTo(-half, -3);
@@ -184,13 +256,12 @@ export class MiniMap {
     ctx.lineTo(half, 3);
     ctx.stroke();
     ctx.textAlign = 'center';
-    ctx.fillText(`${this.range / 2} m`, 0, -5);
+    ctx.fillText(`${this.scale / 4} m`, 0, 0);
     ctx.restore();
   }
   
   clearOverlay() {
     const ctx = this.canvas.getContext('2d');
-    const size = this.size;
-    ctx.clearRect(0, 0, size, size);
+    ctx.clearRect(0, 0, this.width, this.height);
   }
 }

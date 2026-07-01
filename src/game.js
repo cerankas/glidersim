@@ -120,7 +120,7 @@ export class Game {
   }
 
   jump(dx, dy, dz) {
-    const c = this.keyboard.keys['Control'] ? (this.keyboard.keys['Alt'] ? 10 : 100) : (this.keyboard.keys['Alt'] ? 10000 : 1000);
+    const c = this.keyboard.keys['Control'] ? (this.keyboard.keys['Alt'] ? (this.keyboard.keys['Shift'] ? 100000 : 10) : 100) : (this.keyboard.keys['Alt'] ? 10000 : 1000);
     const delta = new THREE.Vector3(c*dx, c*dy, c*dz);
     this.glider.mesh.position.add(delta);
     this.camera.position.add(delta);
@@ -158,7 +158,7 @@ export class Game {
     this.updateSound(t);
   
     this.cellManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y);
-    this.mapManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y, this.miniMap.range);
+    this.mapManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y, this.miniMap.mapDataRange());
   
     if (!this.glider.paused) this.collider.update(dt, this.cellManager, this.glider, this.scene.water);
   
@@ -232,13 +232,13 @@ export class Game {
     this.renderer.setScissorTest(true);
     this.renderer.render(this.scene, this.camera);
   
-    if (this.miniMap.show) {
+    if (this.miniMap.visible) {
       this.miniMap.cam.position.copy(this.glider.mesh.position);
       this.miniMap.cam.rotation.z = this.miniMap.north ? Math.PI : Math.PI - this.glider.yaw;
       this.miniMap.cam.updateProjectionMatrix();
       
-      this.renderer.setViewport(0, 0, this.miniMap.size, this.miniMap.size);
-      this.renderer.setScissor(0, 0, this.miniMap.size, this.miniMap.size);
+      this.renderer.setViewport(0, 0, this.miniMap.width, this.miniMap.height);
+      this.renderer.setScissor(0, 0, this.miniMap.width, this.miniMap.height);
       this.renderer.setScissorTest(true);
       this.renderer.render(this.miniMap.scene, this.miniMap.cam);
       this.miniMap.drawOverlay(this.glider, this.wind, this.task, this.multiplayer.gliders);
