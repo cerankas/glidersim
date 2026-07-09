@@ -9,14 +9,14 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@types/three": "^0.184.1",
-    "vite": "^8.0.11",
-    "vite-plugin-mkcert": "^2.0.0"
+    "@types/three": "^0.185.1",
+    "vite": "^8.1.4",
+    "vite-plugin-mkcert": "^2.1.0"
   },
   "dependencies": {
-    "firebase": "^12.13.0",
+    "firebase": "^12.16.0",
     "peerjs": "^1.5.5",
-    "three": "^0.184.0",
-    "tsl-textures": "^3.0.1"
+    "three": "^0.185.1",
+    "tsl-textures": "^3.0.4"
   }
 }
