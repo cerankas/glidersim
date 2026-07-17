@@ -8,4 +8,10 @@ export default defineConfig({
   resolve: {
     alias: [{ find: '@', replacement: '/src' }],
   },
+    build: {
+    rollupOptions: {
+      external: (id) =>
+        id === 'three' || id.startsWith('three/')
+    }
+  },
 });
