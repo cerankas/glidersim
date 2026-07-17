@@ -132,8 +132,8 @@ class WaterMesh extends Mesh {
 
 		} );
 
-		const noise = getNoise( positionWorld.xz.mul( this.size ) );
-		const surfaceNormal = normalize( noise.xzy.mul( 1.5, 1.0, 1.5 ) );
+		const noise = getNoise( positionWorld.xy.mul( this.size ) );
+		const surfaceNormal = normalize( noise.xyz.mul( 1.5, 1.5, 1.0 ) );
 
 		const worldToEye = cameraPosition.sub( positionWorld );
 		const eyeDirection = normalize( worldToEye );
@@ -145,7 +145,7 @@ class WaterMesh extends Mesh {
 
 		const distance = length( worldToEye );
 
-		const distortion = surfaceNormal.xz.mul( float( 0.001 ).add( float( 1.0 ).div( distance ) ) ).mul( this.distortionScale );
+		const distortion = surfaceNormal.xy.mul( float( 0.001 ).add( float( 1.0 ).div( distance ) ) ).mul( this.distortionScale );
 
 		// Material
 
