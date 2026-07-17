@@ -45,6 +45,8 @@ export class Collider {
     
     this.raycaster.near = .1;
     this.raycaster.far = 7.5;
+
+    const cellDistanceThreshold = cellManager.cellSize / 2;
     
     const objects = ['mesh', 'houses', 'trees'];
     
@@ -61,8 +63,9 @@ export class Collider {
       }
 
       for (const xy in cellManager.cells) {
+      const c = cellManager.cells[xy];
+      if (Math.abs(glider.mesh.position.x - c.x) > cellDistanceThreshold || Math.abs(glider.mesh.position.y - c.y) > cellDistanceThreshold) continue;
         for (const object of objects) {
-          const c = cellManager.cells[xy];
           const i = this.raycaster.intersectObject(c[object], true);
           if (i.length) {
             this.addBall(i[0].point.clone(), object == 'mesh' ? terrainMaterial.getPixelColor(i[0].point.x, i[0].point.y) : (object == 'trees' ? 0x7aa21d : 0xc00000), glider);
