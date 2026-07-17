@@ -1,4 +1,4 @@
-import { GUI } from "three/addons/libs/lil-gui.module.min";
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 export const gui = new GUI();
 gui.title('Menu [Esc]');

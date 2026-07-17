@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
 import { terrainHeight } from '@/map/terrain';
 import { playCheckpointSound } from '@/sound/checkpointSound';
 

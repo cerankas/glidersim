@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import { ImprovedNoise } from 'three/addons/math/ImprovedNoise';
+import * as THREE from 'three/webgpu';
+import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 import { guiSettings } from '@/control/gui';
 
 export const params = {

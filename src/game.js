@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import Stats from 'three/addons/libs/stats.module';
+import * as THREE from 'three/webgpu';
+import Stats from 'three/addons/libs/stats.module.js';
 import { Glider } from '@/glider/glider';
 import { Wind } from '@/map/wind';
 import { setShadowCameraFrustum } from '@/scene/shadow';
@@ -39,7 +39,7 @@ export class Game {
     this.audioVario = new AudioVario();
     this.airflowSound = new AirflowSound();
     this.stats = new Stats();
-    this.renderer = new THREE.WebGLRenderer({antialias:true, logarithmicDepthBuffer:true });
+    this.renderer = new THREE.WebGPURenderer({antialias:true, logarithmicDepthBuffer:true});
     this.mouse = new Mouse();
     this.keyboard = new Keyboard(this);
 
@@ -147,7 +147,7 @@ export class Game {
     this.scene.water.position.x = this.glider.mesh.position.x;
     this.scene.water.position.y = this.glider.mesh.position.y;
   
-    if (!this.glider.paused) this.scene.water.material.uniforms['time'].value -= dt;
+    // if (!this.glider.paused) this.scene.water.material.uniforms['time'].value -= dt;
   
     this.multiplayer.update(t, this.cellManager, this.wind, this.scene, this.camera);
     

@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
 import { CockpitView } from './cockpitView';
 import { TailView } from './tailView';
 import { FollowView } from './followView';

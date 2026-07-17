@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
 import { generateTerrain, getFaceCentersAndNormals } from "@/map/terrain";
 import { terrainMaterial } from '@/scene/materials';
 import { generateTrees } from '@/objects/trees'

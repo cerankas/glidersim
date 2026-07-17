@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
 
 
 export const treeTrunkMaterial = new THREE.MeshLambertMaterial({ color: 0x4d2926, flatShading:true });

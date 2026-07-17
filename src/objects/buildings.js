@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
 import { houseWallMaterial, houseRoofMaterial } from '@/scene/materials';
 import { seededRandom } from '@/utils/random';
 import { params as terrainParams } from '@/map/terrain';

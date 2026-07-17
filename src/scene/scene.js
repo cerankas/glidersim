@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
 import { Water } from '@/objects/water';
 
 
@@ -9,7 +9,7 @@ export class Scene extends THREE.Scene {
     this.background = new THREE.Color(this.fog.color);
 
     this.water = new Water();
-    this.add(this.water);
+    // this.add(this.water);
 
     this.ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
     this.add(this.ambientLight);

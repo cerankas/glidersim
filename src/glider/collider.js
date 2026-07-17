@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
 import { dustBallMaterial, terrainMaterial } from '@/scene/materials';
 import { playTreeSound } from '@/sound/treeSound';
 import { playGroundSound } from '@/sound/groundSound';

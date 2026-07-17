@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import { Water as BaseWater } from 'three/addons/objects/Water';
+import * as THREE from 'three/webgpu';
+import { Water as BaseWater } from 'three/addons/objects/Water.js';
 
 
 export class Water extends BaseWater {
