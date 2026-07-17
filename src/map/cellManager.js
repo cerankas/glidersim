@@ -3,7 +3,7 @@ import { Cell } from '@/map/cell';
 
 export class CellManager {
   constructor() {
-    this.cellSize = 1000;
+    this.cellSize = 2500;
     this.cells = [];
     this.treeCnt = 0;
     this.houseCnt = 0;
