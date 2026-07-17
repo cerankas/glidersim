@@ -5,11 +5,11 @@ import { Water } from '@/objects/water';
 export class Scene extends THREE.Scene {
   constructor() {
     super();    
-    this.fog = new THREE.Fog(0xd0d0ff, 500, 3000);
+    this.fog = new THREE.Fog(0xd0d0ff, 1000, 3000);
     this.background = new THREE.Color(this.fog.color);
 
     this.water = new Water();
-    // this.add(this.water);
+    this.add(this.water);
 
     this.ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
     this.add(this.ambientLight);
