@@ -12,6 +12,8 @@ export class Collider {
     this.raycaster = new THREE.Raycaster();
     this.ballGeometry = new THREE.SphereGeometry(1, 8, 4);
     this.ballMesh = new THREE.InstancedMesh(this.ballGeometry, dustBallMaterial, this.maxCount);
+    this.ballMesh.setColorAt(0, new THREE.Color());
+    this.ballMesh.instanceColor.needsUpdate = true;
     this.ballMesh.count = 0;
     this.balls = [];
     this.supported = false;
