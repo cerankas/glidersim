@@ -45,15 +45,20 @@ const mapColorNode = Fn(() => {
   const h = positionGeometry.z.mul(3/1300).toVar();
   const lineCol = vec3( 0, 0, 0 ).toVar( );
 
-  If(h.lessThan(-.01), () => { lineCol.assign(mapColors.c0); })
+  If(h.lessThan(0), () => { lineCol.assign(mapColors.c0); })
   .ElseIf(h.lessThan(1), () => { lineCol.assign(mix(mapColors.c1, mapColors.c2, h)); })
   .ElseIf(h.lessThan(2), () => { lineCol.assign(mix(mapColors.c2, mapColors.c3, h.sub(1))); })
   .Else(() => { lineCol.assign(mix(mapColors.c3, mapColors.c4, h.sub(2))); });
 
-  const hgrid = positionGeometry.z.div(100).toVar();
+  const hgrid = positionGeometry.z.div(250).toVar();
+  const hgrid2 = positionGeometry.z.div(50).toVar();
   const grid = hgrid.sub(.5).fract().sub(.5).abs().div(fwidth(hgrid)).toVar();
+  const grid2 = hgrid2.sub(.5).fract().sub(.5).abs().div(fwidth(hgrid2)).toVar();
   const line = min(grid, 1);
-  return mix(lineCol, lineCol.mul(.5), line).pow(2.2);
+  const line2 = min(grid2, 1);
+  const col = mix(lineCol, lineCol.mul(.66), line);
+  const col2 = mix(col, col.mul(.66), line2);
+  return col2.pow(2.2); 
 });
 
 export const mapMaterial = new THREE.MeshBasicNodeMaterial({outputNode:  mapColorNode()});

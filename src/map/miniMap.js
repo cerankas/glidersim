@@ -79,7 +79,7 @@ export class MiniMap {
   }
   
   changeScale(factor) {
-    this.scale = Math.min(256000, Math.max(2000, this.scale * factor));
+    this.scale = Math.min(256000, Math.max(500, this.scale * factor));
     this.updateCameraFrustum();
   }
 

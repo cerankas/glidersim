@@ -9,7 +9,7 @@ export class MapCell {
     this.size = size;
     this.scene = scene;
 
-    this.geometry = generateTerrain(x, y, size, size / 50);
+    this.geometry = generateTerrain(x, y, size, size / 200);
     this.mesh = new THREE.Mesh(this.geometry, mapMaterial);    
     this.scene.add(this.mesh);
   }
