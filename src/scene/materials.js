@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { Fn, positionGeometry, vec3, If, mix, fwidth, min } from 'three/tsl';
 
 
 export const treeTrunkMaterial = new THREE.MeshLambertMaterial({ color: 0x4d2926, flatShading:true });
@@ -9,9 +10,6 @@ export const houseWallMaterial = new THREE.MeshLambertMaterial({ color: 0xd0c080
 export const houseRoofMaterial = new THREE.MeshLambertMaterial({ color: 0xc00000, flatShading:true });
 
 export const dustBallMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading:true });
-
-// export const waterMaterial = new THREE.MeshLambertMaterial({ color: 0x0000ff, flatShading:true, side: THREE.DoubleSide });
-export const waterMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff, flatShading:true, side: THREE.DoubleSide, roughness:0 });
 
 export const terrainMaterial = new THREE.MeshLambertMaterial({ flatShading: false });
 
@@ -33,64 +31,29 @@ new THREE.TextureLoader().load("textures/moro.jpg", (map) => {
 });
 
 
-let mapUniforms = {
-  minHeight: {value: 0},
-  maxHeight: {value: 1300},
-}
-
 // map shader based on https://jsfiddle.net/prisoner849/ag09r4pL/
 
-export const mapMaterial = new THREE.MeshLambertMaterial({
-  onBeforeCompile: shader => {
-    shader.uniforms.minHeight = mapUniforms.minHeight;
-    shader.uniforms.maxHeight = mapUniforms.maxHeight;
-    shader.vertexShader = `
-      varying vec3 vPos;
-      ${shader.vertexShader}
-    `.replace(
-      `#include <begin_vertex>`,
-      `#include <begin_vertex>
-        vPos = transformed;
-      `
-    );
-    shader.fragmentShader = `
-      uniform float minHeight;
-      uniform float maxHeight;
-      varying vec3 vPos;
-      ${shader.fragmentShader}
-    `.replace(
-      `#include <dithering_fragment>`,
-      `
-        float h = (vPos.z - minHeight) / (maxHeight - minHeight);
-        h = 3. * clamp(h, -0.01, 1.);
-        
-        float hgrid = vPos.z / 100.;
-        float grid = abs(fract(hgrid - 0.5) - 0.5) / fwidth(hgrid) / 1.;
-        float line = min(grid, 1.0);
-        vec3 lineCol = vec3(0);
-        
-        #define c0 vec3(0,0,.5)
-        #define c1 vec3(0,.5,0)
-        #define c2 vec3(0,1,0)
-        #define c3 vec3(1,1,0)
-        #define c4 vec3(1,0,0)
-        if (h <= -0.01)
-          lineCol = c0;
-        else if (h < 1.)
-          lineCol = mix(c1, c2, h);
-        else if (h < 2.)
-          lineCol = mix(c2, c3, h - 1.);
-        else
-          lineCol = mix(c3, c4, h - 2.);
-        
-        vec3 col = mix(lineCol, .5 * lineCol, line);
-      
-        gl_FragColor = vec4(col, opacity);
-      `
-    );
-  }
+const mapColors = {
+  c0: new THREE.Color().setRGB(0,0,.5),
+  c1: new THREE.Color().setRGB(0,.5,0),
+  c2: new THREE.Color().setRGB(0,1,0),
+  c3: new THREE.Color().setRGB(1,1,0),
+  c4: new THREE.Color().setRGB(1,0,0),
+}
+
+const mapColorNode = Fn(() => {
+  const h = positionGeometry.z.mul(3/1300).toVar();
+  const lineCol = vec3( 0, 0, 0 ).toVar( );
+
+  If(h.lessThan(-.01), () => { lineCol.assign(mapColors.c0); })
+  .ElseIf(h.lessThan(1), () => { lineCol.assign(mix(mapColors.c1, mapColors.c2, h)); })
+  .ElseIf(h.lessThan(2), () => { lineCol.assign(mix(mapColors.c2, mapColors.c3, h.sub(1))); })
+  .Else(() => { lineCol.assign(mix(mapColors.c3, mapColors.c4, h.sub(2))); });
+
+  const hgrid = positionGeometry.z.div(100).toVar();
+  const grid = hgrid.sub(.5).fract().sub(.5).abs().div(fwidth(hgrid)).toVar();
+  const line = min(grid, 1);
+  return mix(lineCol, lineCol.mul(.5), line).pow(2.2);
 });
 
-
-mapMaterial.defines = {"USE_UV":""};
-mapMaterial.extensions = {derivatives: true};
+export const mapMaterial = new THREE.MeshBasicNodeMaterial({outputNode:  mapColorNode()});

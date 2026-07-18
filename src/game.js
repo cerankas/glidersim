@@ -237,8 +237,8 @@ export class Game {
       this.miniMap.cam.rotation.z = this.miniMap.north ? Math.PI : Math.PI - this.glider.yaw;
       this.miniMap.cam.updateProjectionMatrix();
       
-      this.renderer.setViewport(0, 0, this.miniMap.width, this.miniMap.height);
-      this.renderer.setScissor(0, 0, this.miniMap.width, this.miniMap.height);
+      this.renderer.setViewport(0, window.innerHeight - this.miniMap.height, this.miniMap.width, this.miniMap.height);
+      this.renderer.setScissor(0, window.innerHeight - this.miniMap.height, this.miniMap.width, this.miniMap.height);
       this.renderer.setScissorTest(true);
       this.renderer.render(this.miniMap.scene, this.miniMap.cam);
       this.miniMap.drawOverlay(this.glider, this.wind, this.task, this.multiplayer.gliders);
