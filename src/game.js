@@ -25,17 +25,19 @@ export class Game {
     this.mouseControlFlag = false;
     this.showStats = JSON.parse(localStorage.getItem('stats') || false);
 
+    this.range = 3000;
+
     this.wind = new Wind();
     this.task = new Task();
     this.collider = new Collider();
     this.glider = new Glider();
     this.instruments = new Instruments();
-    this.cellManager = new CellManager();
+    this.cellManager = new CellManager(this.range);
     this.mapManager = new MapManager();
     this.miniMap = new MiniMap();
     this.multiplayer = new Multiplayer(this.glider);
-    this.scene = new Scene();
-    this.camera = new Camera();
+    this.scene = new Scene(this.range);
+    this.camera = new Camera(this.range);
     this.audioVario = new AudioVario();
     this.airflowSound = new AirflowSound();
     this.stats = new Stats();
@@ -43,7 +45,7 @@ export class Game {
     this.mouse = new Mouse();
     this.keyboard = new Keyboard(this);
 
-    this.stats.showPanel(this.showStats ? 0 : -1);
+    this.stats.showPanel(this.showStats ? 1 : -1);
     document.body.appendChild(this.stats.dom);
     
     this.cellManager.setScene(this.scene);
@@ -51,7 +53,6 @@ export class Game {
     
     const initpos = new THREE.Vector3(500, 1250, 2050);
     this.camera.setup(initpos);
-    this.scene.setupCamera(this.camera);
 
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;

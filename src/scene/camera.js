@@ -11,8 +11,8 @@ export class Camera extends THREE.PerspectiveCamera {
   views = [new CockpitView(), new TailView(), new FollowView(), new FreeView()];
   view = this.views[2];
   
-  constructor() {
-    super(75, window.innerWidth / window.innerHeight, .01, 5000);
+  constructor(range) {
+    super(75, window.innerWidth / window.innerHeight, .01, range);
   }
 
   bindInput(domElement) {

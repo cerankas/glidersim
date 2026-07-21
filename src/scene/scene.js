@@ -3,12 +3,12 @@ import { Water } from '@/objects/water';
 
 
 export class Scene extends THREE.Scene {
-  constructor() {
+  constructor(range) {
     super();    
-    this.fog = new THREE.Fog(0xd0d0ff, 1000, 3000);
+    this.fog = new THREE.Fog(0xd0d0ff, .5 * range, range);
     this.background = new THREE.Color(this.fog.color);
 
-    this.water = new Water();
+    this.water = new Water(range);
     this.add(this.water);
 
     this.ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
@@ -16,11 +16,6 @@ export class Scene extends THREE.Scene {
 
     this.directionalLight = createDirectionalLight(1000, 4096);
     this.add(this.directionalLight);
-  }
-
-  setupCamera(camera) {
-    camera.far = this.fog.far;
-    camera.updateProjectionMatrix();
   }
 }
 

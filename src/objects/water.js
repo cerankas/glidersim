@@ -3,9 +3,10 @@ import { WaterMesh } from './WaterMesh';
 
 
 export class Water extends WaterMesh {
-  constructor() {
+  constructor(range) {
+    const size = range * 2;
     super(
-      new THREE.PlaneGeometry(6000, 6000),
+      new THREE.PlaneGeometry(size, size),
       {
         waterNormals: new THREE.TextureLoader().load( 'textures/waternormals.jpg', function ( texture ) {
           texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
