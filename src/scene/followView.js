@@ -8,6 +8,7 @@ export class FollowView {
   azimuth;
   elevation;
   base = new THREE.Vector3();
+  moveAwayOnZoomOut = false;
   
   constructor() {
     this.reset();
@@ -31,25 +32,24 @@ export class FollowView {
   onZoom(factor) {
     this.distance *= factor;
     this.distance = THREE.MathUtils.clamp(this.distance, 5, 50);
+    if (factor > 1) this.moveAwayOnZoomOut = true;
   }
 
   update(camera, glider) {
     camera.up.copy(worldUp);
     
     const offset = glider.mesh.position.clone().sub(this.base);
-    if (offset.length() > this.distance) {
+    if (offset.length() > this.distance || this.moveAwayOnZoomOut) {
       offset.normalize();
       offset.multiplyScalar(this.distance);
       this.base.copy(glider.mesh.position).sub(offset);
+      this.moveAwayOnZoomOut = false;
     }
 
     const baseOffset = this.base.clone().sub(glider.mesh.position);
     const baseElevation = Math.PI/2 - worldUp.angleTo(baseOffset);
-    this.baseElevation = baseElevation;
     const minElevation = -.99 * Math.PI/2 - baseElevation;
-    this.minElevation = minElevation;
     const maxElevation = .99 * Math.PI/2 - baseElevation;
-    this.maxElevation = maxElevation;
     
 
     if (this.elevation < minElevation) this.elevation = minElevation;
