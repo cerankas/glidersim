@@ -278,8 +278,12 @@ export class Game {
     }
     
     log.push(`flight time: ${this.glider.time.toFixed(2)}`);
-    log.push(`trees: ${this.cellManager.treeCnt}`)
-    log.push(`houses: ${this.cellManager.houseCnt}`)
+    const treeCounts = this.cellManager.treeCounts();
+    const houseCounts = this.cellManager.houseCounts();
+    const totalTrees = treeCounts.reduce((sum, value) => sum + value);
+    const totalHouses = houseCounts.reduce((sum, value) => sum + value);
+    log.push(`trees total: ${totalTrees}, max per chunk: ${Math.max(...treeCounts)}`);
+    log.push(`houses total: ${totalHouses}, max per chunk: ${Math.max(...houseCounts)}`);
     log.push(`collider balls: ${this.collider.balls.length}`);
 
     if (this.task.times.length) {
