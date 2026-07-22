@@ -10,6 +10,7 @@ export class Keyboard {
     document.addEventListener("keydown", this.onKeyDown, true);
     document.addEventListener("keyup", this.onKeyUp, true);
     document.addEventListener("keypress", this.onKeyPress, true);
+    document.addEventListener("visibilitychange", () => this.keys = {});
   }
 
   onKeyDown = (e) => {
