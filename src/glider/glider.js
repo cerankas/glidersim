@@ -41,7 +41,7 @@ export class Glider {
 
   load(initpos, callback) {
     new GLTFLoader().load("glider.glb", (loaded) => {
-      this.mesh = new THREE.Group().add(loaded.scene);
+      this.mesh = loaded.scene.getObjectByName('Body');
       this.mesh.position.copy(initpos);
       this.updateAttitude();
       
@@ -66,10 +66,12 @@ export class Glider {
           c.material = new THREE.MeshBasicMaterial({map});
           this.textures.push(map);
         }
+        if (c.isMesh) {
+          c.material.side = THREE.FrontSide;
+        }
         if (c.name == 'Canopy') {
           c.castShadow = true;
           c.material.opacity = .4;
-          c.material.side = THREE.FrontSide;
         }
         if (c.name == 'WheelF') this.landingGearWheel = c;
         if (c.name == 'LandingGearDoorL') this.landingGearDoorLeft = c;
