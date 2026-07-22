@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
-import { treeCrownMaterial, treeTrunkMaterial } from '@/scene/materials';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { vertexColorMaterial } from '@/scene/materials';
 import { seededRandom } from '@/utils/random';
 import { params as terrainParams } from '@/map/terrain';
 
@@ -7,15 +8,30 @@ let random = seededRandom(12345678);
 
 const treeRadius = 4;
 
-function createTreePart(part, z) {
+function addVertexColors(geometry, color) {
+  const count = geometry.attributes.position.count;
+  const array = new Float32Array(3 * count);
+  for (let i = 0; i < 3 * count; i += 3) {
+    array[i+0] = color.r;
+    array[i+1] = color.g;
+    array[i+2] = color.b;
+  }
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(array, 3));
+}
+
+function createTreePart(part, z, color) {
   part.rotateX(Math.PI/2);
   part.translate(0, 0, z);
+  part.toNonIndexed();
+  addVertexColors(part, color);
   return part;
 }
 
-const trunk = createTreePart(new THREE.CylinderGeometry(.5, .5, 4, 8), 1);
-const maple = createTreePart(new THREE.SphereGeometry(4, 8, 4), 6);
-const pine = createTreePart(new THREE.ConeGeometry(3, 8, 8), 6);
+const trunkGeometry = createTreePart(new THREE.CylinderGeometry(.5, .5, 4, 8), 1, new THREE.Color(0x4d2926));
+const crownGeometry = createTreePart(new THREE.SphereGeometry(4, 8, 4), 6, new THREE.Color(0x7aa21d)); // maple
+// const crownGeometry = createTreePart(new THREE.ConeGeometry(3, 8, 8), 6, new THREE.Color(0x7aa21d)); // pine
+
+const treeGeometry = mergeGeometries([trunkGeometry, crownGeometry])
 
 export function generateTrees(geometry, normals, avoid) {
   const density = (terrainParams.segmentSize / 50) ** 2;
@@ -35,10 +51,9 @@ export function generateTrees(geometry, normals, avoid) {
     }
   }
 
-  const trunkMesh = new THREE.InstancedMesh(trunk, treeTrunkMaterial, totalTreeCount);
-  const crownMesh = new THREE.InstancedMesh(maple, treeCrownMaterial, totalTreeCount);
-  crownMesh.receiveShadow = true;
-  crownMesh.castShadow = true;
+  const mesh = new THREE.InstancedMesh(treeGeometry, vertexColorMaterial, totalTreeCount);
+  mesh.receiveShadow = true;
+  mesh.castShadow = true;
 
   let a = new THREE.Vector3();
   let b = new THREE.Vector3();
@@ -74,16 +89,11 @@ export function generateTrees(geometry, normals, avoid) {
 
       avoid.push([treePosition.clone(), treeRadius]);
       
-      trunkMesh.setMatrixAt(treeNumber, matrix); 
-      crownMesh.setMatrixAt(treeNumber, matrix);
+      mesh.setMatrixAt(treeNumber, matrix);
       treeNumber++;
     }
   }
 
-  const group =  new THREE.Group();
-  group.add(trunkMesh);
-  group.add(crownMesh);
-  trunkMesh.count = treeNumber;
-  crownMesh.count = treeNumber;
-  return group;
+  mesh.count = treeNumber;
+  return mesh;
 }

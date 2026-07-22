@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
-import { houseWallMaterial, houseRoofMaterial } from '@/scene/materials';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { vertexColorMaterial } from '@/scene/materials';
 import { seededRandom } from '@/utils/random';
 import { params as terrainParams } from '@/map/terrain';
 
@@ -7,14 +8,20 @@ let random = seededRandom(12345678);
 
 let houseRadius = 7;
 
-function createPart(part, z) {
-  // part.rotateX(Math.PI/2);
-  part.translate(0, 0, z);
-  return part;
+function addVertexColors(geometry, color) {
+  const count = geometry.attributes.position.count;
+  const array = new Float32Array(3 * count);
+  for (let i = 0; i < 3 * count; i += 3) {
+    array[i+0] = color.r;
+    array[i+1] = color.g;
+    array[i+2] = color.b;
+  }
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(array, 3));
 }
 
 const roofVertices = [
-  -1,-1,0,    1,-1,0,    -1, 1,0,    1, 1,0,
+  -1,-1,0,    1,-1,0,
+  -1, 1,0,    1, 1,0,
   -1,0, 1,    1,0, 1,
 ];
 
@@ -29,8 +36,13 @@ const roofFaces = [
   1,2,3,
 ];
 
-const walls = createPart(new THREE.BoxGeometry(1,1,1), 0);
-const roof = createPart(new THREE.PolyhedronGeometry(roofVertices, roofFaces, .8), .5);
+const wallGeometry = new THREE.BoxGeometry(1,1,1).toNonIndexed();
+const roofGeometry = new THREE.PolyhedronGeometry(roofVertices, roofFaces, .8).translate(0,0,.5);
+
+addVertexColors(wallGeometry, new THREE.Color(0xd0c080));
+addVertexColors(roofGeometry, new THREE.Color(0xc00000));
+
+const houseGeometry = mergeGeometries([wallGeometry, roofGeometry]);
 
 export function generateHouses(geometry, normals, avoid) {
   const density = (terrainParams.segmentSize / 50) ** 2;
@@ -50,12 +62,9 @@ export function generateHouses(geometry, normals, avoid) {
     }
   }
 
-  const wallMesh = new THREE.InstancedMesh(walls, houseWallMaterial, totalCount);
-  const roofMesh = new THREE.InstancedMesh(roof, houseRoofMaterial, totalCount);
-  wallMesh.receiveShadow = true;
-  roofMesh.receiveShadow = true;
-  wallMesh.castShadow = true;
-  roofMesh.castShadow = true;
+  const mesh = new THREE.InstancedMesh(houseGeometry, vertexColorMaterial, totalCount);
+  mesh.receiveShadow = true;
+  mesh.castShadow = true;
   
   let a = new THREE.Vector3();
   let b = new THREE.Vector3();
@@ -95,16 +104,11 @@ export function generateHouses(geometry, normals, avoid) {
 
       avoid.push([housePosition.clone(), houseRadius]); 
       
-      wallMesh.setMatrixAt(houseNumber, matrix); 
-      roofMesh.setMatrixAt(houseNumber, matrix);
+      mesh.setMatrixAt(houseNumber, matrix);
       houseNumber++;
     }
   }
 
-  const group =  new THREE.Group();
-  group.add(wallMesh);
-  group.add(roofMesh);
-  wallMesh.count = houseNumber;
-  roofMesh.count = houseNumber;
-  return group;
+  mesh.count = houseNumber;
+  return mesh;
 }

@@ -2,12 +2,7 @@ import * as THREE from 'three/webgpu';
 import { Fn, positionGeometry, vec3, If, mix, fwidth, min } from 'three/tsl';
 
 
-export const treeTrunkMaterial = new THREE.MeshLambertMaterial({ color: 0x4d2926, flatShading:true });
-export const treeCrownMaterial = new THREE.MeshLambertMaterial({ color: 0x7aa21d, flatShading:true });
-
-
-export const houseWallMaterial = new THREE.MeshLambertMaterial({ color: 0xd0c080, flatShading:true });
-export const houseRoofMaterial = new THREE.MeshLambertMaterial({ color: 0xc00000, flatShading:true });
+export const vertexColorMaterial = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
 
 export const dustBallMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading:true });
 

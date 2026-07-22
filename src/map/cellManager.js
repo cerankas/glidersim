@@ -48,7 +48,7 @@ export class CellManager {
     const counts  = [];
     for (const xy in this.cells) {
       const cell = this.cells[xy];
-      counts.push(cell.trees.children[0].count)
+      counts.push(cell.trees.count)
     }
     return counts;
   }
@@ -57,7 +57,7 @@ export class CellManager {
     const counts  = [];
     for (const xy in this.cells) {
       const cell = this.cells[xy];
-      counts.push(cell.houses.children[0].count)
+      counts.push(cell.houses.count)
     }
     return counts;
   }
