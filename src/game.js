@@ -42,6 +42,7 @@ export class Game {
     this.airflowSound = new AirflowSound();
     this.stats = new Stats();
     this.renderer = new THREE.WebGPURenderer({antialias:true, logarithmicDepthBuffer:true});
+    this.renderer.highPrecision = true;
     this.mouse = new Mouse();
     this.keyboard = new Keyboard(this);
 
