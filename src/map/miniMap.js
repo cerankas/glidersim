@@ -4,7 +4,7 @@ import { ResizeHandle } from '@/ui/resizeHandle';
 
 export class MiniMap {
   constructor() {
-    this.scale = 4000; // length in m corresponding to min(map width, map height)
+    this.scale = 16000; // length in m corresponding to min(map width, map height)
     this.north = false;
 
     this.canvas = document.getElementById('mapCanvas');
@@ -95,7 +95,7 @@ export class MiniMap {
     this.cam.bottom = frustumHeight / 2;
   }
 
-  drawOverlay(glider, wind, task, multiplayerGliders) {
+  drawOverlay(glider, wind, task, multiplayerGliders, terrainCells) {
     const ctx = this.canvas.getContext('2d');
 
     const size = Math.min(this.width, this.height);
@@ -257,6 +257,24 @@ export class MiniMap {
     ctx.stroke();
     ctx.textAlign = 'center';
     ctx.fillText(`${this.scale / 4} m`, 0, 0);
+    ctx.restore();
+
+    // draw cellManager helper
+    ctx.save();
+    ctx.translate(this.width/2, this.height/2);
+    if (!this.north) ctx.rotate(-glider.yaw);
+    ctx.lineWidth = .5;
+
+    for (const xy in terrainCells) {
+      const cell = terrainCells[xy];
+      ctx.save();
+      const x = scale * (cell.x - glider.mesh.position.x);
+      const y = -scale * (cell.y - glider.mesh.position.y);
+      ctx.translate(x,y);
+      const s = scale * cell.size;
+      ctx.strokeRect(-s/2,-s/2,s,s);
+      ctx.restore();
+    }
     ctx.restore();
   }
   

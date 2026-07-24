@@ -243,7 +243,7 @@ export class Game {
       this.renderer.setScissor(0, window.innerHeight - this.miniMap.height, this.miniMap.width, this.miniMap.height);
       this.renderer.setScissorTest(true);
       this.renderer.render(this.miniMap.scene, this.miniMap.cam);
-      this.miniMap.drawOverlay(this.glider, this.wind, this.task, this.multiplayer.gliders);
+      this.miniMap.drawOverlay(this.glider, this.wind, this.task, this.multiplayer.gliders, this.cellManager.cells);
     }
     else {
       this.miniMap.clearOverlay();
@@ -283,8 +283,8 @@ export class Game {
     const houseCounts = this.cellManager.houseCounts();
     const totalTrees = treeCounts.reduce((sum, value) => sum + value);
     const totalHouses = houseCounts.reduce((sum, value) => sum + value);
-    log.push(`trees total: ${totalTrees}, max per chunk: ${Math.max(...treeCounts)}`);
-    log.push(`houses total: ${totalHouses}, max per chunk: ${Math.max(...houseCounts)}`);
+    log.push(`trees: ${totalTrees} : [${treeCounts.sort().reverse()}]`);
+    log.push(`houses: ${totalHouses} : [${houseCounts.sort().reverse()}]`);
     log.push(`collider balls: ${this.collider.balls.length}`);
 
     if (this.task.times.length) {
