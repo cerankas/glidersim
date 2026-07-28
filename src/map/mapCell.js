@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { generateTerrain } from '@/map/terrain';
+import { TerrainCell } from '@/map/terrain';
 import { mapMaterial} from '@/scene/materials';
 
 export class MapCell {
@@ -9,8 +9,9 @@ export class MapCell {
     this.size = size;
     this.scene = scene;
 
-    this.geometry = generateTerrain(x, y, size, size / 200);
-    this.mesh = new THREE.Mesh(this.geometry, mapMaterial);    
+    this.terrain = new TerrainCell(size, size / 200);
+    this.terrain.update(x, y);
+    this.mesh = new THREE.Mesh(this.terrain.geometry, mapMaterial);    
     this.scene.add(this.mesh);
   }
 

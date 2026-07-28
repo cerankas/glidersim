@@ -2,7 +2,6 @@ import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { vertexColorMaterial } from '@/scene/materials';
 import { seededRandom } from '@/utils/random';
-import { params as terrainParams } from '@/map/terrain';
 
 let random = seededRandom(12345678);
 
@@ -45,7 +44,7 @@ addVertexColors(roofGeometry, new THREE.Color(0xc00000));
 const houseGeometry = mergeGeometries([wallGeometry, roofGeometry]);
 
 export function generateHouses(geometry, normals, avoid) {
-  const density = (terrainParams.segmentSize / 50) ** 2;
+  const density = 1;
 
   let totalCount = 0;
   const countsOnTriangles = [];

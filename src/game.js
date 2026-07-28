@@ -27,17 +27,18 @@ export class Game {
 
     this.range = 3000;
 
+    this.scene = new Scene(this.range);
+    this.camera = new Camera(this.range);
+
     this.wind = new Wind();
     this.task = new Task();
     this.collider = new Collider();
     this.glider = new Glider();
     this.instruments = new Instruments();
-    this.cellManager = new CellManager(this.range);
+    this.cellManager = new CellManager(this.range, this.scene);
     this.mapManager = new MapManager();
     this.miniMap = new MiniMap();
     this.multiplayer = new Multiplayer(this.glider);
-    this.scene = new Scene(this.range);
-    this.camera = new Camera(this.range);
     this.audioVario = new AudioVario();
     this.airflowSound = new AirflowSound();
     this.stats = new Stats();
@@ -49,7 +50,6 @@ export class Game {
     this.stats.showPanel(this.showStats ? 1 : -1);
     document.body.appendChild(this.stats.dom);
     
-    this.cellManager.setScene(this.scene);
     this.mapManager.setScene(this.miniMap.scene);
     
     const initpos = new THREE.Vector3(500, 1250, 2050);

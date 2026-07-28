@@ -2,7 +2,6 @@ import * as THREE from 'three/webgpu';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { vertexColorMaterial } from '@/scene/materials';
 import { seededRandom } from '@/utils/random';
-import { params as terrainParams } from '@/map/terrain';
 
 let random = seededRandom(12345678);
 
@@ -34,7 +33,7 @@ const crownGeometry = createTreePart(new THREE.SphereGeometry(4, 8, 4), 6, new T
 const treeGeometry = mergeGeometries([trunkGeometry, crownGeometry])
 
 export function generateTrees(geometry, normals, avoid) {
-  const density = (terrainParams.segmentSize / 50) ** 2;
+  const density = 1;
 
   let totalTreeCount = 0;
   const treeCountsOnTriangles = [];

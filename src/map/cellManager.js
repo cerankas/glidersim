@@ -2,42 +2,40 @@ import { Cell } from '@/map/cell';
 
 
 export class CellManager {
-  constructor(range) {
+  constructor(range, scene) {
     this.cellSize = range;
-    this.cells = [];
-
-    this.range = range;
-    this.addThreshold = Math.ceil(this.range / this.cellSize);
-    this.removeThreshold = this.addThreshold + 1;
-  }
-  
-  setScene(scene) {
-    this.scene = scene;
-  }
-
-  update(gliderX,gliderY) {
-    const t0 = Date.now();
-
-    const x0 = Math.floor(gliderX / this.cellSize + .5);
-    const y0 = Math.floor(gliderY / this.cellSize + .5);
+    const size = this.cellSize;
     
-    for (const xy in this.cells) {
-      const [x,y] = xy.split(',').map(Number);
-  
-      const dx = Math.abs(x - x0);
-      const dy = Math.abs(y - y0);
-      
-      if ((dx > this.removeThreshold || dy > this.removeThreshold) || this.cells[xy].size != this.cellSize) { 
-        this.cells[xy].dispose();
-        delete this.cells[xy];
+    this.cells = [];
+    
+    for (let x = -size; x <= size; x += size) {
+      for (let y = -size; y <= size; y += size) {
+        this.cells.push(new Cell(x, y, size, scene));
       }
     }
+  }
+  
+  update(gliderX, gliderY) {
+    const size = this.cellSize;
 
-    for (let x = x0 - this.addThreshold; x <= x0 + this.addThreshold; x++) {
-      for (let y = y0 - this.addThreshold; y <= y0 + this.addThreshold; y++) {
-        if (this.cells[[x,y]] == undefined) {
-          this.cells[[x,y]] = new Cell(x * this.cellSize, y * this.cellSize, this.cellSize, this.scene);
-          if (Date.now() - t0 > 5) return;
+    const centerX = Math.round(gliderX / size) * size;
+    const centerY = Math.round(gliderY / size) * size;
+    
+    for (let cellX = centerX - size; cellX <= centerX + size; cellX += size) {
+      for (let cellY = centerY - size; cellY <= centerY + size; cellY += size) {
+
+        const dx = Math.abs(cellX - gliderX);
+        const dy = Math.abs(cellY - gliderY);
+
+        const anyCornerVisible = Math.hypot(dx - size / 2, dy - size / 2) < size;
+        const anySideVisible = Math.min(dx, dy) < .5 * size && Math.max(dx, dy) < 1.5 * size;
+      
+        if (!anyCornerVisible && !anySideVisible) continue;
+      
+        if (!this.cells.some(cell => cell.x == cellX && cell.y == cellY)) {
+          this.cells.sort((a, b) => b.distance(gliderX, gliderY) - a.distance(gliderX, gliderY));
+          this.cells[0].update(cellX, cellY);
+          return;
         }
       }
     }

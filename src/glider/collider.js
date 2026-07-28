@@ -48,7 +48,8 @@ export class Collider {
 
     const cellDistanceThreshold = cellManager.cellSize / 2;
     
-    const objects = ['mesh', 'houses', 'trees'];
+    // const objects = ['mesh', 'houses', 'trees'];
+    const objects = ['mesh'];
     
     for (const {dir, dst} of directions) {
       this.raycaster.set(glider.mesh.position, dir);

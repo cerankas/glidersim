@@ -265,6 +265,7 @@ export class MiniMap {
     if (!this.north) ctx.rotate(-glider.yaw);
     ctx.lineWidth = .5;
 
+    //draw rectangle for every terrain cell
     for (const xy in terrainCells) {
       const cell = terrainCells[xy];
       ctx.save();
@@ -275,6 +276,12 @@ export class MiniMap {
       ctx.strokeRect(-s/2,-s/2,s,s);
       ctx.restore();
     }
+
+    // draw visibility circle
+    ctx.beginPath();
+    ctx.arc(0, 0, scale * 3000, 0, 2 * Math.PI);
+    ctx.stroke();
+
     ctx.restore();
   }
   
