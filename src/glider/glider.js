@@ -68,6 +68,7 @@ export class Glider {
         }
         if (c.isMesh) {
           c.material.side = THREE.FrontSide;
+          c.castShadow = true;
         }
         if (c.name == 'Canopy') {
           c.castShadow = true;

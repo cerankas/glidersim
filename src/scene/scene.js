@@ -14,7 +14,7 @@ export class Scene extends THREE.Scene {
     this.ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
     this.add(this.ambientLight);
 
-    this.directionalLight = createDirectionalLight(1000, 4096);
+    this.directionalLight = createDirectionalLight(1000, 8192);
     this.add(this.directionalLight);
   }
 }
