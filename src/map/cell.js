@@ -10,7 +10,7 @@ export class Cell {
     this.y = y;
     this.size = size;
 
-    this.terrain = new TerrainCell(size, 12, true);
+    this.terrain = new TerrainCell(size, 12);
     this.terrain.update(x, y);
     
     this.mesh = new THREE.Mesh(this.terrain.geometry, terrainMaterial);

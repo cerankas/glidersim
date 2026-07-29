@@ -7,7 +7,7 @@ export class Wind {
     this.direction = 90; // deg
     this.speed = 30; // km/h
     this.range = 500; // m
-    this.liftFactor = 2 * (12 / 50) ** 2;
+    this.liftFactor = 2 * 2 * (12 / 50) ** 2;
 
     const folder = guiSettings.addFolder('Wind').close();
     folder.add(this,'direction',0,360);
@@ -33,18 +33,22 @@ export class Wind {
 
     let sumLifts = 0;
 
-    for (const idx in cellManager.cells) {
-      
-      const cell = cellManager.cells[idx];
+    const center = new THREE.Vector3();
+    const normal = new THREE.Vector3();
 
+    for (const cell of cellManager.cells) {
+      
       if (Math.abs(cell.x - position.x) > this.range + cellManager.cellSize/2) continue;
       if (Math.abs(cell.y - position.y) > this.range + cellManager.cellSize/2) continue;
 
       const positionToCenter = new THREE.Vector3();
       
-      for (let i = 0; i < cell.terrain.normals.length; i++) {
-        const center = cell.terrain.centers[i];
-        const normal = cell.terrain.normals[i];
+      const centers = cell.terrain.geometry.attributes.position.array;
+      const normals = cell.terrain.geometry.attributes.normal.array;
+
+      for (let i = 0; i < normals.length; i += 3) {
+        center.fromArray(centers, i);
+        normal.fromArray(normals, i);
 
         if (
           center.x < minx || center.x > maxx ||

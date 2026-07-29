@@ -22,91 +22,80 @@ export function terrainHeight(x, y) { // ~200 ns per call
 
 
 export class TerrainCell {
-  constructor(cellSize, segmentSize, useFaceCentersAndNormals=false) {
+  constructor(cellSize, segmentSize) {
     this.cellSize = cellSize;
     this.segmentSize = segmentSize;
-    this.segments = (cellSize / segmentSize) | 0;
+    this.segmentsPerSide = (cellSize / segmentSize) | 0;
 
-    const { segments } = this;
+    const { segmentsPerSide } = this;
+    const verticesPerSide = segmentsPerSide + 1;
 
-    const vertexCount = (segments + 1) * (segments + 1);
-    const faceCount = segments * segments * 2;
-    const indexCount = faceCount * 3;
+    const vertexCount = verticesPerSide * verticesPerSide;
+    const indexCount = segmentsPerSide * segmentsPerSide * 6;
 
-    this.positionAttribute = new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3);
-    this.uvAttribute = new THREE.BufferAttribute(new Float32Array(vertexCount * 2), 2);
-    this.indexAttribute = new THREE.BufferAttribute(new Uint32Array(indexCount), 1);
- 
-    this.positionAttribute.setUsage(THREE.DynamicDrawUsage);
- 
-    this.geometry = new THREE.BufferGeometry();
-    this.geometry.setAttribute('position', this.positionAttribute);
-    this.geometry.setAttribute('uv', this.uvAttribute);
-    this.geometry.setIndex(this.indexAttribute);
+    const positions = new Float32Array(vertexCount * 3);
+    const uvs = new Float32Array(vertexCount * 2);
+    const indices = new Uint16Array(indexCount);
 
-    this.centers = null;
-    this.normals = null;
+    for (let j = 0; j <= segmentsPerSide; j++) {
+      for (let i = 0; i <= segmentsPerSide; i++) {
+        const vi = i * verticesPerSide + j;
+        const x = i * segmentSize - cellSize * .5;
+        const y = j * segmentSize - cellSize * .5;
 
-    if (useFaceCentersAndNormals) {
-      this.centers = new Array(faceCount);
-      this.normals = new Array(faceCount);
-  
-      for (let i = 0; i < faceCount; i++) {
-        this.centers[i] = new THREE.Vector3();
-        this.normals[i] = new THREE.Vector3();
-      }
-    }
-  }
-
-  update(x0, y0) {
-    const { segments, segmentSize, cellSize } = this;
-
-    const positions = this.positionAttribute.array;
-    const uvs = this.uvAttribute.array;
-    const indices = this.indexAttribute.array;
-
-    for (let i = 0; i <= segments; i++) {
-      for (let j = 0; j <= segments; j++) {
-        const vi = i * (segments + 1) + j;
-        const x = x0 + i * segmentSize - cellSize * .5;
-        const y = y0 + j * segmentSize - cellSize * .5;
-
-
-        positions[vi * 3] = x;
-        positions[vi * 3 + 1] = y;
-        positions[vi * 3 + 2] = terrainHeight(x, y);
- 
         uvs[vi * 2] = x / 1000;
         uvs[vi * 2 + 1] = y / 1000;
       }
     }
 
-
     let idx = 0;
-    for (let i = 0; i < segments; i++) {
-      for (let j = 0; j < segments; j++) {
-        const a = i * (segments + 1) + j;
-        const b = a + 1;
-        const c = a + (segments + 1);
-        const d = c + 1;
+    for (let j = 0; j < segmentsPerSide; j++) {
+      for (let i = 0; i < segmentsPerSide; i++) {
+        const a = i * verticesPerSide + j;
+        const b = a + verticesPerSide;
+        const c = a + verticesPerSide + 1;
+        const d = a + 1;
     
-        const ad = Math.abs(positions[3 * a + 2] - positions[3 * d + 2]);
-        const bc = Math.abs(positions[3 * b + 2] - positions[3 * c + 2]);
- 
-        if (ad < bc) {
-        // if (true) {
-          indices[idx++] = a; indices[idx++] = d; indices[idx++] = b;
-          indices[idx++] = a; indices[idx++] = c; indices[idx++] = d;
-        } else {
-          indices[idx++] = a; indices[idx++] = c; indices[idx++] = b;
-          indices[idx++] = b; indices[idx++] = c; indices[idx++] = d;
-        }
+        indices[idx++] = a;
+        indices[idx++] = b;
+        indices[idx++] = d;
+
+        indices[idx++] = b;
+        indices[idx++] = c;
+        indices[idx++] = d;
       }
     }
     
-    this.positionAttribute.needsUpdate = true;
-    this.uvAttribute.needsUpdate = true;
-    this.indexAttribute.needsUpdate = true;
+    const positionAttribute = new THREE.BufferAttribute(positions, 3);
+    const uvAttribute = new THREE.BufferAttribute(uvs, 2);
+    const indexAttribute = new THREE.BufferAttribute(indices, 1);
+ 
+    positionAttribute.setUsage(THREE.DynamicDrawUsage);
+ 
+    this.geometry = new THREE.BufferGeometry();
+    this.geometry.setAttribute('position', positionAttribute);
+    this.geometry.setAttribute('uv', uvAttribute);
+    this.geometry.setIndex(indexAttribute);
+  }
+
+  update(x0, y0) {
+    const { cellSize, segmentSize, segmentsPerSide } = this;
+
+    const positions = this.geometry.attributes.position.array;
+
+    for (let j = 0; j <= segmentsPerSide; j++) {
+      for (let i = 0; i <= segmentsPerSide; i++) {
+        const vi = 3 * (i * (segmentsPerSide + 1) + j);
+        const x = x0 + i * segmentSize - cellSize * .5;
+        const y = y0 + j * segmentSize - cellSize * .5;
+        
+        positions[vi] = x;
+        positions[vi + 1] = y;
+        positions[vi + 2] = terrainHeight(x, y);
+      }
+    }
+
+    this.geometry.attributes.position.needsUpdate = true;
  
     this.geometry.computeVertexNormals();
     this.geometry.computeBoundingSphere();
@@ -114,23 +103,5 @@ export class TerrainCell {
  
     this.x = x0;
     this.y = y0;
-
-    if (this.normals) this.computeFaceCentersAndNormals();
-  }
-
-  computeFaceCentersAndNormals() {
-    const tri = new THREE.Triangle();
-    const indices = new THREE.Vector3();
-
-    for(let faceIndex = 0; faceIndex < this.centers.length; faceIndex++){
-      indices.fromArray(this.geometry.index.array, 3 * faceIndex);
-      tri.setFromAttributeAndIndices(this.geometry.attributes.position,
-        indices.x,
-        indices.y,
-        indices.z
-      );
-      this.centers[faceIndex].copy(tri.a).add(tri.b).add(tri.c).divideScalar(3);
-      tri.getNormal(this.normals[faceIndex]);
-    }
   }
 }
