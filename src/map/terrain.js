@@ -11,7 +11,7 @@ const waterLevel = 500;
 
 const perlin = new ImprovedNoise();
 
-export function terrainHeight(x, y) { // ~200 ns per call
+export function terrainHeight(x, y) { // ~120 ns per call
   x -= 6000;
   y -= 3500;
   const fine   = 1 + perlin.noise(x * freq1, y * freq1, 2.7);
@@ -37,24 +37,25 @@ export class TerrainCell {
     const uvs = new Float32Array(vertexCount * 2);
     const indices = new Uint16Array(indexCount);
 
+    let vi = 0;
     for (let j = 0; j <= segmentsPerSide; j++) {
-      for (let i = 0; i <= segmentsPerSide; i++) {
-        const vi = i * verticesPerSide + j;
-        const x = i * segmentSize - cellSize * .5;
-        const y = j * segmentSize - cellSize * .5;
+      const y = j * segmentSize - cellSize * .5;
 
-        uvs[vi * 2] = x / 1000;
-        uvs[vi * 2 + 1] = y / 1000;
+      for (let i = 0; i <= segmentsPerSide; i++) {
+        const x = i * segmentSize - cellSize * .5;
+
+        uvs[vi++] = x / 1000;
+        uvs[vi++] = y / 1000;
       }
     }
 
     let idx = 0;
     for (let j = 0; j < segmentsPerSide; j++) {
       for (let i = 0; i < segmentsPerSide; i++) {
-        const a = i * verticesPerSide + j;
-        const b = a + verticesPerSide;
+        const a = i + verticesPerSide * j;
+        const b = a + 1;
         const c = a + verticesPerSide + 1;
-        const d = a + 1;
+        const d = a + verticesPerSide;
     
         indices[idx++] = a;
         indices[idx++] = b;
@@ -78,20 +79,21 @@ export class TerrainCell {
     this.geometry.setIndex(indexAttribute);
   }
 
-  update(x0, y0) {
+  update(x0, y0) { // ~16 ms per call @ cellSize = 3000, segmentSize = 12
     const { cellSize, segmentSize, segmentsPerSide } = this;
 
     const positions = this.geometry.attributes.position.array;
 
+    let vi = 0;
     for (let j = 0; j <= segmentsPerSide; j++) {
+      const y = y0 + j * segmentSize - cellSize * .5;
+      
       for (let i = 0; i <= segmentsPerSide; i++) {
-        const vi = 3 * (i * (segmentsPerSide + 1) + j);
         const x = x0 + i * segmentSize - cellSize * .5;
-        const y = y0 + j * segmentSize - cellSize * .5;
         
-        positions[vi] = x;
-        positions[vi + 1] = y;
-        positions[vi + 2] = terrainHeight(x, y);
+        positions[vi++] = x;
+        positions[vi++] = y;
+        positions[vi++] = terrainHeight(x, y);
       }
     }
 
