@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
 
+
 const freq1 = .003;
 const freq2 = .001;
 const freq3 = .0002;
@@ -10,6 +11,10 @@ const scale3 = 500;
 const waterLevel = 500;
 
 const perlin = new ImprovedNoise();
+
+const _vtmp = new THREE.Vector3();
+const _vresult = new THREE.Vector3();
+
 
 export function terrainHeight(x, y) { // ~120 ns per call
   x -= 6000;
@@ -105,5 +110,39 @@ export class TerrainCell {
  
     this.x = x0;
     this.y = y0;
+  }
+
+  getNormal(x, y) { // ~60 ns per call
+    const i = (x - this.x + this.cellSize * .5) / this.segmentSize;
+    const j = (y - this.y + this.cellSize * .5) / this.segmentSize;
+
+    const i0 = Math.floor(i);
+    const j0 = Math.floor(j);
+
+    const wi = i - i0;
+    const wj = j - j0;
+
+    if (i0 < 0 || j0 < 0 || i0 >= this.segmentsPerSide || j0 >= this.segmentsPerSide) return none;
+
+    const verticesPerSide = this.segmentsPerSide + 1;
+    
+    const ia = i0 + verticesPerSide * j0;
+    const ib = ia + 1;
+    const ic = ia + verticesPerSide + 1;
+    const id = ia + verticesPerSide;
+
+    const normals = this.geometry.attributes.normal.array;
+
+    const wa = (1 - wi) * (1 - wj);
+    const wb = wi       * (1 - wj);
+    const wc = wi       * wj;
+    const wd = (1 - wi) * wj;
+
+    return _vresult.set(0,0,0)
+    .addScaledVector(_vtmp.fromArray(normals, 3 * ia), wa)
+    .addScaledVector(_vtmp.fromArray(normals, 3 * ib), wb)
+    .addScaledVector(_vtmp.fromArray(normals, 3 * ic), wc)
+    .addScaledVector(_vtmp.fromArray(normals, 3 * id), wd)
+    .normalize();
   }
 }
