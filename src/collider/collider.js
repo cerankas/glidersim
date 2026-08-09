@@ -29,49 +29,48 @@ export class Collider {
     ];
     
     this.raycaster.near = .1;
-    this.raycaster.far = 7.5;
 
     const tileDistanceThreshold = worldManager.tileSize / 2;
     
-    const objects = ['mesh', 'houses', 'trees'];
-    
+    const intersect = (object, onHit) => {
+      const intersections = this.raycaster.intersectObject(object, true);
+      if (!intersections.length) return;
+      onHit(intersections[0]);
+    }
+
+    const addDust = (intersection, color) => this.dust.add(intersection.point.clone(), color, glider);
+
     for (const {dir, dst} of directions) {
       this.raycaster.set(glider.mesh.position, dir);
       this.raycaster.far = dst;
       
-      const i = this.raycaster.intersectObject(water, true);
-      if (i.length) {
-        this.dust.add(i[0].point.clone(), 0x0000ff, glider);
-        if (!glider.paused) playWaterSound(glider.speed);
-        glider.mesh.position.z = Math.max(glider.mesh.position.z, 0);
-        this.supported = true;
-      }
+      intersect(water, intersection => {
+        addDust(intersection, 0x0000ff);
+        playWaterSound(glider.speed);
+      });
 
       for (const tile of worldManager.tiles) {
-      if (Math.abs(glider.mesh.position.x - tile.x) > tileDistanceThreshold || Math.abs(glider.mesh.position.y - tile.y) > tileDistanceThreshold) continue;
-        for (const object of objects) {
-          const i = this.raycaster.intersectObject(tile[object], true);
-          if (i.length) {
-            this.dust.add(i[0].point.clone(), object == 'mesh' ? terrainMaterial.getPixelColor(i[0].point.x, i[0].point.y) : (object == 'trees' ? 0x7aa21d : 0xc00000), glider);
-            
-            if (object == 'mesh') {
-              const normal = i[0].normal;
-              const depth = dst - i[0].distance;
-              glider.mesh.position.add(normal.clone().multiplyScalar(depth));
-              glider.speed *= 1 - (depth / 10);
-              playGroundSound(glider.speed);
-              this.supported = true;
-            }
+        if (Math.abs(glider.mesh.position.x - tile.x) > tileDistanceThreshold || Math.abs(glider.mesh.position.y - tile.y) > tileDistanceThreshold) continue;
 
-            if (object == 'trees') {
-              playTreeSound(glider.speed);
-            }
+        intersect(tile.mesh, intersection => {
+          addDust(intersection, terrainMaterial.getPixelColor(intersection.point.x, intersection.point.y));
+          const normal = intersection.normal;
+          const depth = dst - intersection.distance;
+          glider.mesh.position.add(normal.clone().multiplyScalar(depth));
+          glider.speed *= 1 - (depth / 10);
+          playGroundSound(glider.speed);
+          this.supported = true;
+        });
 
-            if (object == 'houses') {
-              playRoofSound(glider.speed);
-            }
-          }
-        }
+        intersect(tile.houses, intersection => {
+          addDust(intersection, 0xc00000);
+          playRoofSound(glider.speed);
+        });
+
+        intersect(tile.trees, intersection => {
+          addDust(intersection, 0x7aa21d);
+          playTreeSound(glider.speed);
+        });
       }
     }
 
