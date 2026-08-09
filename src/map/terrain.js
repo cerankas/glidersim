@@ -26,28 +26,28 @@ export function terrainHeight(x, y) { // ~120 ns per call
 }
 
 
-export class TerrainCell {
-  constructor(cellSize, segmentSize) {
-    this.cellSize = cellSize;
-    this.segmentSize = segmentSize;
-    this.segmentsPerSide = (cellSize / segmentSize) | 0;
+export class TerrainTile {
+  constructor(tileSize, quadSize) {
+    this.tileSize = tileSize;
+    this.quadSize = quadSize
+    this.quadsPerSide = (tileSize / quadSize) | 0;
 
-    const { segmentsPerSide } = this;
-    const verticesPerSide = segmentsPerSide + 1;
+    const { quadsPerSide } = this;
+    const verticesPerSide = quadsPerSide + 1;
 
     const vertexCount = verticesPerSide * verticesPerSide;
-    const indexCount = segmentsPerSide * segmentsPerSide * 6;
+    const indexCount = quadsPerSide * quadsPerSide * 6;
 
     const positions = new Float32Array(vertexCount * 3);
     const uvs = new Float32Array(vertexCount * 2);
     const indices = new Uint16Array(indexCount);
 
     let vi = 0;
-    for (let j = 0; j <= segmentsPerSide; j++) {
-      const y = j * segmentSize - cellSize * .5;
+    for (let j = 0; j <= quadsPerSide; j++) {
+      const y = j * quadSize - tileSize * .5;
 
-      for (let i = 0; i <= segmentsPerSide; i++) {
-        const x = i * segmentSize - cellSize * .5;
+      for (let i = 0; i <= quadsPerSide; i++) {
+        const x = i * quadSize - tileSize * .5;
 
         uvs[vi++] = x / 1000;
         uvs[vi++] = y / 1000;
@@ -55,8 +55,8 @@ export class TerrainCell {
     }
 
     let idx = 0;
-    for (let j = 0; j < segmentsPerSide; j++) {
-      for (let i = 0; i < segmentsPerSide; i++) {
+    for (let j = 0; j < quadsPerSide; j++) {
+      for (let i = 0; i < quadsPerSide; i++) {
         const a = i + verticesPerSide * j;
         const b = a + 1;
         const c = a + verticesPerSide + 1;
@@ -84,17 +84,17 @@ export class TerrainCell {
     this.geometry.setIndex(indexAttribute);
   }
 
-  update(x0, y0) { // ~16 ms per call @ cellSize = 3000, segmentSize = 12
-    const { cellSize, segmentSize, segmentsPerSide } = this;
+  update(x0, y0) { // ~16 ms per call @ tileSize = 3000, quadSize = 12
+    const { tileSize, quadSize, quadsPerSide } = this;
 
     const positions = this.geometry.attributes.position.array;
 
     let vi = 0;
-    for (let j = 0; j <= segmentsPerSide; j++) {
-      const y = y0 + j * segmentSize - cellSize * .5;
+    for (let j = 0; j <= quadsPerSide; j++) {
+      const y = y0 + j * quadSize - tileSize * .5;
       
-      for (let i = 0; i <= segmentsPerSide; i++) {
-        const x = x0 + i * segmentSize - cellSize * .5;
+      for (let i = 0; i <= quadsPerSide; i++) {
+        const x = x0 + i * quadSize - tileSize * .5;
         
         positions[vi++] = x;
         positions[vi++] = y;
@@ -113,8 +113,8 @@ export class TerrainCell {
   }
 
   getNormal(x, y) { // ~60 ns per call
-    const i = (x - this.x + this.cellSize * .5) / this.segmentSize;
-    const j = (y - this.y + this.cellSize * .5) / this.segmentSize;
+    const i = (x - this.x + this.tileSize * .5) / this.quadSize;
+    const j = (y - this.y + this.tileSize * .5) / this.quadSize;
 
     const i0 = Math.floor(i);
     const j0 = Math.floor(j);
@@ -122,9 +122,9 @@ export class TerrainCell {
     const wi = i - i0;
     const wj = j - j0;
 
-    if (i0 < 0 || j0 < 0 || i0 >= this.segmentsPerSide || j0 >= this.segmentsPerSide) return none;
+    if (i0 < 0 || j0 < 0 || i0 >= this.quadsPerSide || j0 >= this.quadsPerSide) return null;
 
-    const verticesPerSide = this.segmentsPerSide + 1;
+    const verticesPerSide = this.quadsPerSide + 1;
     
     const ia = i0 + verticesPerSide * j0;
     const ib = ia + 1;

@@ -21,7 +21,7 @@ export class Wind {
     return wind;
   }
     
-  calculateLift(position, cellManager) {
+  calculateLift(position, worldManager) {
     const windDirection = this.vector().normalize();
 
     const minx = position.x - this.range;
@@ -36,15 +36,15 @@ export class Wind {
     const center = new THREE.Vector3();
     const normal = new THREE.Vector3();
 
-    for (const cell of cellManager.cells) {
+    for (const tile of worldManager.tiles) {
       
-      if (Math.abs(cell.x - position.x) > this.range + cellManager.cellSize/2) continue;
-      if (Math.abs(cell.y - position.y) > this.range + cellManager.cellSize/2) continue;
+      if (Math.abs(tile.x - position.x) > this.range + worldManager.tileSize/2) continue;
+      if (Math.abs(tile.y - position.y) > this.range + worldManager.tileSize/2) continue;
 
       const positionToCenter = new THREE.Vector3();
       
-      const centers = cell.terrain.geometry.attributes.position.array;
-      const normals = cell.terrain.geometry.attributes.normal.array;
+      const centers = tile.terrain.geometry.attributes.position.array;
+      const normals = tile.terrain.geometry.attributes.normal.array;
 
       for (let i = 0; i < normals.length; i += 3) {
         center.fromArray(centers, i);

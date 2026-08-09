@@ -95,7 +95,7 @@ export class MiniMap {
     this.cam.bottom = frustumHeight / 2;
   }
 
-  drawOverlay(glider, wind, task, multiplayerGliders, terrainCells) {
+  drawOverlay(glider, wind, task, multiplayerGliders, worldTiles) {
     const ctx = this.canvas.getContext('2d');
 
     const size = Math.min(this.width, this.height);
@@ -259,20 +259,19 @@ export class MiniMap {
     ctx.fillText(`${this.scale / 4} m`, 0, 0);
     ctx.restore();
 
-    // draw cellManager helper
+    // draw tileManager helper
     ctx.save();
     ctx.translate(this.width/2, this.height/2);
     if (!this.north) ctx.rotate(-glider.yaw);
     ctx.lineWidth = .5;
 
-    //draw rectangle for every terrain cell
-    for (const xy in terrainCells) {
-      const cell = terrainCells[xy];
+    //draw rectangle for every world tile
+    for (const tile of worldTiles) {
       ctx.save();
-      const x = scale * (cell.x - glider.mesh.position.x);
-      const y = -scale * (cell.y - glider.mesh.position.y);
+      const x = scale * (tile.x - glider.mesh.position.x);
+      const y = -scale * (tile.y - glider.mesh.position.y);
       ctx.translate(x,y);
-      const s = scale * cell.size;
+      const s = scale * tile.tileSize;
       ctx.strokeRect(-s/2,-s/2,s,s);
       ctx.restore();
     }

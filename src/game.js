@@ -11,13 +11,14 @@ import { Scene } from '@/scene/scene';
 import { Instruments } from '@/glider/instruments';
 import { Task } from '@/control/task';
 import { MiniMap } from '@/map/miniMap';
-import { CellManager } from '@/map/cellManager';
+import { WorldManager } from '@/map/worldManager';
 import { MapManager } from '@/map/mapManager';
 import { Multiplayer } from '@/multiplayer/multiplayer';
 import { getGamepadState } from '@/control/gamepad';
 import { Collider } from '@/glider/collider';
 import { Mouse } from './control/mouse';
 import { Keyboard } from './control/keyboard';
+import { config } from './config';
 
 
 export class Game {
@@ -25,7 +26,7 @@ export class Game {
     this.mouseControlFlag = false;
     this.showStats = JSON.parse(localStorage.getItem('stats') || false);
 
-    this.range = 3000;
+    this.range = config.visibilityRange;
 
     this.scene = new Scene(this.range);
     this.camera = new Camera(this.range);
@@ -35,7 +36,7 @@ export class Game {
     this.collider = new Collider();
     this.glider = new Glider();
     this.instruments = new Instruments();
-    this.cellManager = new CellManager(this.range, this.scene);
+    this.worldManager = new WorldManager(config.tileSize, config.bucketSize, config.quadSize, this.scene);
     this.mapManager = new MapManager();
     this.miniMap = new MiniMap();
     this.multiplayer = new Multiplayer(this.glider);
@@ -46,6 +47,8 @@ export class Game {
     this.renderer.highPrecision = true;
     this.mouse = new Mouse();
     this.keyboard = new Keyboard(this);
+
+    window.tile = this.worldManager.tiles[4];
 
     this.stats.showPanel(this.showStats ? 1 : -1);
     document.body.appendChild(this.stats.dom);
@@ -142,7 +145,7 @@ export class Game {
 
     this.updateGliderControl(dt);
   
-    const windLift = this.wind.calculateLift(this.glider.mesh.position, this.cellManager);
+    const windLift = this.wind.calculateLift(this.glider.mesh.position, this.worldManager);
   
     this.glider.move(dt, windLift, this.wind, this.collider.supported);
   
@@ -151,7 +154,7 @@ export class Game {
   
     // if (!this.glider.paused) this.scene.water.material.uniforms['time'].value -= dt;
   
-    this.multiplayer.update(t, this.cellManager, this.wind, this.scene, this.camera);
+    this.multiplayer.update(t, this.worldManager, this.wind, this.scene, this.camera);
     
     this.task.update(this.glider.mesh.position, this.glider.time);
   
@@ -159,10 +162,10 @@ export class Game {
 
     this.updateSound(t);
   
-    this.cellManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y);
+    this.worldManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y);
     this.mapManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y, this.miniMap.mapDataRange());
   
-    if (!this.glider.paused) this.collider.update(dt, this.cellManager, this.glider, this.scene.water);
+    // if (!this.glider.paused) this.collider.update(dt, this.cellManager, this.glider, this.scene.water);
   
     document.getElementById('logDiv').innerHTML = this.showStats ? this.generateStats() : '';
 
@@ -243,7 +246,7 @@ export class Game {
       this.renderer.setScissor(0, window.innerHeight - this.miniMap.height, this.miniMap.width, this.miniMap.height);
       this.renderer.setScissorTest(true);
       this.renderer.render(this.miniMap.scene, this.miniMap.cam);
-      this.miniMap.drawOverlay(this.glider, this.wind, this.task, this.multiplayer.gliders, this.cellManager.cells);
+      this.miniMap.drawOverlay(this.glider, this.wind, this.task, this.multiplayer.gliders, this.worldManager.tiles);
     }
     else {
       this.miniMap.clearOverlay();
@@ -279,8 +282,8 @@ export class Game {
     }
     
     log.push(`flight time: ${this.glider.time.toFixed(2)}`);
-    const treeCounts = this.cellManager.treeCounts();
-    const houseCounts = this.cellManager.houseCounts();
+    const treeCounts = this.worldManager.treeCounts();
+    const houseCounts = this.worldManager.houseCounts();
     const totalTrees = treeCounts.reduce((sum, value) => sum + value);
     const totalHouses = houseCounts.reduce((sum, value) => sum + value);
     log.push(`trees: ${totalTrees} : [${treeCounts.sort().reverse()}]`);
