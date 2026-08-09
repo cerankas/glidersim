@@ -15,7 +15,7 @@ import { WorldManager } from '@/map/worldManager';
 import { MapManager } from '@/map/mapManager';
 import { Multiplayer } from '@/multiplayer/multiplayer';
 import { getGamepadState } from '@/control/gamepad';
-import { Collider } from '@/glider/collider';
+import { Collider } from '@/collider/collider';
 import { Mouse } from './control/mouse';
 import { Keyboard } from './control/keyboard';
 import { config } from './config';
