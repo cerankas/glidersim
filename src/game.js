@@ -165,7 +165,7 @@ export class Game {
     this.worldManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y);
     this.mapManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y, this.miniMap.mapDataRange());
   
-    // if (!this.glider.paused) this.collider.update(dt, this.cellManager, this.glider, this.scene.water);
+    if (!this.glider.paused) this.collider.update(dt, this.worldManager, this.glider, this.scene.water);
   
     document.getElementById('logDiv').innerHTML = this.showStats ? this.generateStats() : '';
 
@@ -288,7 +288,7 @@ export class Game {
     const totalHouses = houseCounts.reduce((sum, value) => sum + value);
     log.push(`trees: ${totalTrees} : [${treeCounts.sort().reverse()}]`);
     log.push(`houses: ${totalHouses} : [${houseCounts.sort().reverse()}]`);
-    log.push(`collider balls: ${this.collider.balls.length}`);
+    log.push(`collider balls: ${this.collider.dust.balls.length}`);
 
     if (this.task.times.length) {
       log.push('');

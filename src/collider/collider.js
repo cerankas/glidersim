@@ -1,39 +1,24 @@
 import * as THREE from 'three/webgpu';
-import { dustBallMaterial, terrainMaterial } from '@/scene/materials';
+import { terrainMaterial } from '@/scene/materials';
 import { playTreeSound } from '@/sound/treeSound';
 import { playGroundSound } from '@/sound/groundSound';
 import { playRoofSound } from '@/sound/roofSound';
 import { playWaterSound } from '@/sound/waterSound';
+import { Dust } from './dust';
 
 
 export class Collider {
   constructor() {
-    this.maxCount = 100;
+    this.dust = new Dust();
     this.raycaster = new THREE.Raycaster();
-    this.ballGeometry = new THREE.SphereGeometry(1, 8, 4);
-    this.ballMesh = new THREE.InstancedMesh(this.ballGeometry, dustBallMaterial, this.maxCount);
-    this.ballMesh.setColorAt(0, new THREE.Color());
-    this.ballMesh.instanceColor.needsUpdate = true;
-    this.ballMesh.count = 0;
-    this.balls = [];
     this.supported = false;
   }
 
   toScene(scene) {
-    scene.add(this.ballMesh);
+    scene.add(this.dust.mesh);
   }
 
-  addBall(position, color, glider) {
-    const rnd = () => Math.random() * 15;
-    this.balls.push({
-      position, 
-      scale: 2, 
-      speed: glider.forward().multiplyScalar(glider.speed).add(new THREE.Vector3(rnd(), rnd(), rnd() + 5)),
-      color,
-    });
-  }
-
-  update(dt, cellManager, glider, water) {
+  update(dt, worldManager, glider, water) {
     this.supported = false;
     
     const directions = [
@@ -46,10 +31,9 @@ export class Collider {
     this.raycaster.near = .1;
     this.raycaster.far = 7.5;
 
-    const cellDistanceThreshold = cellManager.cellSize / 2;
+    const tileDistanceThreshold = worldManager.tileSize / 2;
     
-    // const objects = ['mesh', 'houses', 'trees'];
-    const objects = ['mesh'];
+    const objects = ['mesh', 'houses', 'trees'];
     
     for (const {dir, dst} of directions) {
       this.raycaster.set(glider.mesh.position, dir);
@@ -57,19 +41,18 @@ export class Collider {
       
       const i = this.raycaster.intersectObject(water, true);
       if (i.length) {
-        this.addBall(i[0].point.clone(), 0x0000ff, glider);
+        this.dust.add(i[0].point.clone(), 0x0000ff, glider);
         if (!glider.paused) playWaterSound(glider.speed);
         glider.mesh.position.z = Math.max(glider.mesh.position.z, 0);
         this.supported = true;
       }
 
-      for (const xy in cellManager.cells) {
-      const c = cellManager.cells[xy];
-      if (Math.abs(glider.mesh.position.x - c.x) > cellDistanceThreshold || Math.abs(glider.mesh.position.y - c.y) > cellDistanceThreshold) continue;
+      for (const tile of worldManager.tiles) {
+      if (Math.abs(glider.mesh.position.x - tile.x) > tileDistanceThreshold || Math.abs(glider.mesh.position.y - tile.y) > tileDistanceThreshold) continue;
         for (const object of objects) {
-          const i = this.raycaster.intersectObject(c[object], true);
+          const i = this.raycaster.intersectObject(tile[object], true);
           if (i.length) {
-            this.addBall(i[0].point.clone(), object == 'mesh' ? terrainMaterial.getPixelColor(i[0].point.x, i[0].point.y) : (object == 'trees' ? 0x7aa21d : 0xc00000), glider);
+            this.dust.add(i[0].point.clone(), object == 'mesh' ? terrainMaterial.getPixelColor(i[0].point.x, i[0].point.y) : (object == 'trees' ? 0x7aa21d : 0xc00000), glider);
             
             if (object == 'mesh') {
               const normal = i[0].normal;
@@ -92,28 +75,6 @@ export class Collider {
       }
     }
 
-    const m = new THREE.Matrix4;
-    const cnt = Math.min(this.balls.length, this.maxCount);
-    this.ballMesh.count = cnt;
-    for (let i = 0; i < cnt; i++) {
-      const ball = this.balls[i];
-      if (!glider.paused) {
-        ball.scale -= dt*4;
-        ball.speed.multiplyScalar(.98);
-        ball.position.add(ball.speed.clone().multiplyScalar(dt));
-      }
-      m.makeScale(ball.scale, ball.scale, ball.scale);
-      m.setPosition(ball.position);
-      this.ballMesh.setMatrixAt(i, m);
-      this.ballMesh.setColorAt(i, new THREE.Color().setHex(ball.color));
-    }
-    if (cnt) {
-      this.ballMesh.instanceMatrix.needsUpdate = true;
-      this.ballMesh.instanceColor.needsUpdate = true;
-    }
-    this.ballMesh.computeBoundingBox();
-    this.ballMesh.computeBoundingSphere();
-    
-    this.balls = this.balls.filter((ball, i) => i > this.balls.length - this.maxCount && ball.scale > .1);
+    this.dust.update(dt, glider.paused);
   }
 }
