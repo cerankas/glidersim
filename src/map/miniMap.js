@@ -2,6 +2,8 @@ import * as THREE from 'three/webgpu';
 import { ResizeHandle } from '@/ui/resizeHandle';
 
 
+const m = new THREE.Matrix4();
+
 export class MiniMap {
   constructor() {
     this.scale = 16000; // length in m corresponding to min(map width, map height)
@@ -95,7 +97,7 @@ export class MiniMap {
     this.cam.bottom = frustumHeight / 2;
   }
 
-  drawOverlay(glider, wind, task, multiplayerGliders, worldTiles) {
+  drawOverlay(glider, wind, task, multiplayerGliders, worldTiles, collidable) {
     const ctx = this.canvas.getContext('2d');
 
     const size = Math.min(this.width, this.height);
@@ -281,6 +283,42 @@ export class MiniMap {
     ctx.arc(0, 0, scale * 3000, 0, 2 * Math.PI);
     ctx.stroke();
 
+    // draw collidable area
+    {
+      ctx.save();
+      const x = scale * (collidable.x - glider.mesh.position.x);
+      const y = -scale * (collidable.y - glider.mesh.position.y);
+      ctx.translate(x,y);
+      const s = scale * collidable.size;
+      ctx.strokeRect(-s/2,-s/2,s,s);
+      ctx.restore();
+
+      // draw collidable houses
+      for (let i = 0; i < collidable.houses.count; i++) {
+        collidable.houses.getMatrixAt(i, m);
+        const x = scale * (m.elements[12] - glider.mesh.position.x);
+        const y = -scale * (m.elements[13] - glider.mesh.position.y);
+        const s = scale * 7;
+        ctx.save();
+        ctx.translate(x,y);
+        ctx.fillStyle = 'red';
+        ctx.fillRect(-s/2,-s/2,s,s);
+        ctx.restore();
+      }
+
+      // draw collidable trees
+      for (let i = 0; i < collidable.trees.count; i++) {
+        collidable.trees.getMatrixAt(i, m);
+        const x = scale * (m.elements[12] - glider.mesh.position.x);
+        const y = -scale * (m.elements[13] - glider.mesh.position.y);
+        const s = scale * 4;
+        ctx.save();
+        ctx.translate(x,y);
+        ctx.fillStyle = 'green';
+        ctx.fillRect(-s/2,-s/2,s,s);
+        ctx.restore();
+      }
+    }
     ctx.restore();
   }
   

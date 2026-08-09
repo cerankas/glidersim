@@ -15,6 +15,13 @@ export class BucketManager {
 
   bucket(i, j) { return this.buckets[i + this.bucketsPerSide * j]; }
 
+  bucketAt(x, y) {
+    const i = Math.floor((x - this.x + this.tileSize / 2) / this.bucketSize);
+    const j = Math.floor((y - this.y + this.tileSize / 2) / this.bucketSize);
+    if (i < 0 || j < 0 || i >= this.bucketsPerSide || j >= this.bucketsPerSide) return null;
+    return this.bucket(i, j);
+  }
+
   reset(x, y) {
     this.x = x;
     this.y = y;

@@ -6,7 +6,6 @@ export class WorldManager {
     this.tileSize = tileSize;
     this.bucketSize = bucketSize;
     this.quadSize = quadSize;
-    const size = this.tileSize;
     
     this.tiles = [];
     
@@ -15,6 +14,15 @@ export class WorldManager {
         this.tiles.push(new WorldTile(x, y, tileSize, bucketSize, quadSize, scene));
       }
     }
+  }
+
+  tile(x, y) {
+    x = Math.round(x / this.tileSize) * this.tileSize;
+    y = Math.round(y / this.tileSize) * this.tileSize;
+    for (const tile of this.tiles) {
+      if (tile.x == x && tile.y == y) return tile;
+    }
+    return null;
   }
   
   update(gliderX, gliderY) {

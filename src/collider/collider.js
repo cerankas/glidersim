@@ -5,11 +5,13 @@ import { playGroundSound } from '@/sound/groundSound';
 import { playRoofSound } from '@/sound/roofSound';
 import { playWaterSound } from '@/sound/waterSound';
 import { Dust } from './dust';
+import { Collidable } from './collidable';
 
 
 export class Collider {
   constructor() {
     this.dust = new Dust();
+    this.collidable = new Collidable();
     this.raycaster = new THREE.Raycaster();
     this.supported = false;
   }
@@ -30,8 +32,6 @@ export class Collider {
     
     this.raycaster.near = .1;
 
-    const tileDistanceThreshold = worldManager.tileSize / 2;
-    
     const intersect = (object, onHit) => {
       const intersections = this.raycaster.intersectObject(object, true);
       if (!intersections.length) return;
@@ -39,6 +39,8 @@ export class Collider {
     }
 
     const addDust = (intersection, color) => this.dust.add(intersection.point.clone(), color, glider);
+
+    this.collidable.update(glider.mesh.position.x, glider.mesh.position.y, worldManager);
 
     for (const {dir, dst} of directions) {
       this.raycaster.set(glider.mesh.position, dir);
@@ -49,29 +51,25 @@ export class Collider {
         playWaterSound(glider.speed);
       });
 
-      for (const tile of worldManager.tiles) {
-        if (Math.abs(glider.mesh.position.x - tile.x) > tileDistanceThreshold || Math.abs(glider.mesh.position.y - tile.y) > tileDistanceThreshold) continue;
+      intersect(this.collidable.mesh, intersection => {
+        addDust(intersection, terrainMaterial.getPixelColor(intersection.point.x, intersection.point.y));
+        const normal = intersection.normal;
+        const depth = dst - intersection.distance;
+        glider.mesh.position.add(normal.clone().multiplyScalar(depth));
+        glider.speed *= 1 - (depth / 10);
+        playGroundSound(glider.speed);
+        this.supported = true;
+      });
 
-        intersect(tile.mesh, intersection => {
-          addDust(intersection, terrainMaterial.getPixelColor(intersection.point.x, intersection.point.y));
-          const normal = intersection.normal;
-          const depth = dst - intersection.distance;
-          glider.mesh.position.add(normal.clone().multiplyScalar(depth));
-          glider.speed *= 1 - (depth / 10);
-          playGroundSound(glider.speed);
-          this.supported = true;
-        });
+      intersect(this.collidable.houses, intersection => {
+        addDust(intersection, 0xc00000);
+        playRoofSound(glider.speed);
+      });
 
-        intersect(tile.houses, intersection => {
-          addDust(intersection, 0xc00000);
-          playRoofSound(glider.speed);
-        });
-
-        intersect(tile.trees, intersection => {
-          addDust(intersection, 0x7aa21d);
-          playTreeSound(glider.speed);
-        });
-      }
+      intersect(this.collidable.trees, intersection => {
+        addDust(intersection, 0x7aa21d);
+        playTreeSound(glider.speed);
+      });
     }
 
     this.dust.update(dt, glider.paused);

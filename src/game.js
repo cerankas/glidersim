@@ -246,7 +246,7 @@ export class Game {
       this.renderer.setScissor(0, window.innerHeight - this.miniMap.height, this.miniMap.width, this.miniMap.height);
       this.renderer.setScissorTest(true);
       this.renderer.render(this.miniMap.scene, this.miniMap.cam);
-      this.miniMap.drawOverlay(this.glider, this.wind, this.task, this.multiplayer.gliders, this.worldManager.tiles);
+      this.miniMap.drawOverlay(this.glider, this.wind, this.task, this.multiplayer.gliders, this.worldManager.tiles, this.collider.collidable);
     }
     else {
       this.miniMap.clearOverlay();

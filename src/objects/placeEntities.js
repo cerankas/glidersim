@@ -6,7 +6,7 @@ import { terrainHeight } from '@/map/terrain';
 const vertical = new THREE.Vector3(0,0,1);
 
 
-export function placeEntities(mesh, r, bucketManager, terrain, maxCount) {
+export function placeEntities(mesh, r, type, bucketManager, terrain, maxCount) {
   const size = bucketManager.tileSize;
   const x0 = bucketManager.x - size / 2;
   const y0 = bucketManager.y - size / 2;
@@ -29,7 +29,7 @@ export function placeEntities(mesh, r, bucketManager, terrain, maxCount) {
     const angle = normal.angleTo(vertical) * 180 / Math.PI;
     if (angle > rnd() * 30) continue;
 
-    if (!bucketManager.add({x, y, r})) continue;
+    if (!bucketManager.add({x, y, z, r, type})) continue;
 
     matrix.makeRotationZ(rnd() * 2 * Math.PI);
     matrix.setPosition(x, y, z);

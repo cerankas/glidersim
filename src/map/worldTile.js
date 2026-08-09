@@ -56,7 +56,7 @@ export class WorldTile {
     this.y = y;
     this.bucketManager.reset(x, y);
     this.terrain.update(x, y);
-    placeEntities(this.houses, house.radius, this.bucketManager, this.terrain, this.maxHouses);
-    placeEntities(this.trees, tree.radius, this.bucketManager, this.terrain, this.maxTrees);
+    placeEntities(this.houses, house.radius, 'house', this.bucketManager, this.terrain, this.maxHouses);
+    placeEntities(this.trees, tree.radius, 'tree', this.bucketManager, this.terrain, this.maxTrees);
   }
 }
