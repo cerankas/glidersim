@@ -162,7 +162,7 @@ export class Game {
     
     this.task.update(this.glider.mesh.position, this.glider.time);
   
-    this.render();
+    this.renderWorld();
 
     this.updateSound(t);
   
@@ -170,6 +170,8 @@ export class Game {
     if (this.miniMap.visible) {
       this.mapManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y, this.miniMap.mapDataRange(), this.miniMap.mapDataDiagonal());
     }
+
+    this.renderMap();
   
     if (!this.glider.paused) this.collider.update(dt, this.worldManager, this.glider, this.scene.water);
   
@@ -231,7 +233,7 @@ export class Game {
     this.glider.setBrakeControl(keys['b']|0);
   }
 
-  render() {
+  renderWorld() {
     this.camera.update(this.glider);
   
     this.instruments.update(this.glider, this.camera.view.name == 'cockpit', this.camera.view.name == 'tail');
@@ -241,8 +243,10 @@ export class Game {
     this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
     this.renderer.setScissor(0, 0, window.innerWidth, window.innerHeight);
     this.renderer.setScissorTest(true);
-    this.renderer.render(this.scene, this.camera);
-  
+    this.renderer.render(this.scene, this.camera);  
+  }
+
+  renderMap() {
     if (this.miniMap.visible) {
       this.miniMap.cam.position.copy(this.glider.mesh.position);
       this.miniMap.cam.rotation.z = this.miniMap.north ? Math.PI : Math.PI - this.glider.yaw;
