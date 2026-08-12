@@ -63,6 +63,13 @@ export class MiniMap {
     return range;
   }
 
+  mapDataDiagonal() {
+    const min = Math.min(this.width, this.height);
+    const mapDataWidth = this.scale * this.width / min;
+    const mapDataHeight = this.scale * this.height / min;
+    return Math.hypot(mapDataWidth, mapDataHeight);
+  }
+
   resizingRange() {
     return {
       minx: 100,

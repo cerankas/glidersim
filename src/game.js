@@ -168,7 +168,7 @@ export class Game {
   
     this.worldManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y);
     if (this.miniMap.visible) {
-      this.mapManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y, this.miniMap.mapDataRange());
+      this.mapManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y, this.miniMap.mapDataRange(), this.miniMap.mapDataDiagonal());
     }
   
     if (!this.glider.paused) this.collider.update(dt, this.worldManager, this.glider, this.scene.water);

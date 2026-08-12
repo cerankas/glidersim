@@ -6,9 +6,9 @@ export class MapManager {
     this.cell = new MapCell(resolution, scene);
   }
   
-  update(gliderX, gliderY, range) {
+  update(gliderX, gliderY, range, diagonal) {
     const cellSize = range * 2;
-    const cacheMargin = (cellSize - range) / 2;
+    const cacheMargin = (cellSize - diagonal) / 2;
     const outsideCache = this.cell.size !== cellSize
       || Math.abs(gliderX - this.cell.x) > cacheMargin
       || Math.abs(gliderY - this.cell.y) > cacheMargin;
