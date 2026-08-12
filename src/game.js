@@ -36,15 +36,21 @@ export class Game {
     this.collider = new Collider();
     this.glider = new Glider();
     this.instruments = new Instruments();
+
     this.worldManager = new WorldManager(config.tileSize, config.bucketSize, config.quadSize, this.scene);
-    this.mapManager = new MapManager();
     this.miniMap = new MiniMap();
+    this.mapManager = new MapManager(config.heightMapResolution, this.miniMap.scene);
+    
     this.multiplayer = new Multiplayer(this.glider);
+    
     this.audioVario = new AudioVario();
     this.airflowSound = new AirflowSound();
+    
     this.stats = new Stats();
+    
     this.renderer = new THREE.WebGPURenderer({antialias:true, logarithmicDepthBuffer:true});
     this.renderer.highPrecision = true;
+    
     this.mouse = new Mouse();
     this.keyboard = new Keyboard(this);
 
@@ -52,8 +58,6 @@ export class Game {
 
     this.stats.showPanel(this.showStats ? 1 : -1);
     document.body.appendChild(this.stats.dom);
-    
-    this.mapManager.setScene(this.miniMap.scene);
     
     const initpos = new THREE.Vector3(500, 1250, 2050);
     this.camera.setup(initpos);
@@ -163,7 +167,9 @@ export class Game {
     this.updateSound(t);
   
     this.worldManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y);
-    this.mapManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y, this.miniMap.mapDataRange());
+    if (this.miniMap.visible) {
+      this.mapManager.update(this.glider.mesh.position.x, this.glider.mesh.position.y, this.miniMap.mapDataRange());
+    }
   
     if (!this.glider.paused) this.collider.update(dt, this.worldManager, this.glider, this.scene.water);
   

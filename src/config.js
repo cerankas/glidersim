@@ -7,4 +7,6 @@ export const config = {
 
   houseDensity: 500,
   treeDensity: 5000,
+
+  heightMapResolution: 1024,
 }

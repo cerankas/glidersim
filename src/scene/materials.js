@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { Fn, positionGeometry, vec3, If, mix, fwidth, min } from 'three/tsl';
+import { Fn, vec3, If, mix, fwidth, min, texture, uv } from 'three/tsl';
 
 
 export const vertexColorMaterial = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
@@ -36,8 +36,8 @@ const mapColors = {
   c4: new THREE.Color().setRGB(1,0,0),
 }
 
-const mapColorNode = Fn(() => {
-  const h = positionGeometry.z.mul(3/1300).toVar();
+const mapColorNode = Fn(([height]) => {
+  const h = height.mul(3/1300).toVar();
   const lineCol = vec3( 0, 0, 0 ).toVar( );
 
   If(h.lessThan(0), () => { lineCol.assign(mapColors.c0); })
@@ -45,8 +45,8 @@ const mapColorNode = Fn(() => {
   .ElseIf(h.lessThan(2), () => { lineCol.assign(mix(mapColors.c2, mapColors.c3, h.sub(1))); })
   .Else(() => { lineCol.assign(mix(mapColors.c3, mapColors.c4, h.sub(2))); });
 
-  const hgrid = positionGeometry.z.div(250).toVar();
-  const hgrid2 = positionGeometry.z.div(50).toVar();
+  const hgrid = height.div(250).toVar();
+  const hgrid2 = height.div(50).toVar();
   const grid = hgrid.sub(.5).fract().sub(.5).abs().div(fwidth(hgrid)).toVar();
   const grid2 = hgrid2.sub(.5).fract().sub(.5).abs().div(fwidth(hgrid2)).toVar();
   const line = min(grid, 1);
@@ -56,4 +56,9 @@ const mapColorNode = Fn(() => {
   return col2.pow(2.2); 
 });
 
-export const mapMaterial = new THREE.MeshBasicNodeMaterial({outputNode:  mapColorNode()});
+export class HeightMapMaterial extends THREE.MeshBasicNodeMaterial {
+  constructor(heightTexture) {
+    const sampledHeight = texture(heightTexture, uv()).r;
+    super({outputNode: mapColorNode(sampledHeight)});
+  }
+}
