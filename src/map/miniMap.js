@@ -268,64 +268,64 @@ export class MiniMap {
     ctx.fillText(`${this.scale / 4} m`, 0, 0);
     ctx.restore();
 
-    // draw tileManager helper
-    ctx.save();
-    ctx.translate(this.width/2, this.height/2);
-    if (!this.north) ctx.rotate(-glider.yaw);
-    ctx.lineWidth = .5;
+    // // draw tileManager helper
+    // ctx.save();
+    // ctx.translate(this.width/2, this.height/2);
+    // if (!this.north) ctx.rotate(-glider.yaw);
+    // ctx.lineWidth = .5;
 
-    //draw rectangle for every world tile
-    for (const tile of worldTiles) {
-      ctx.save();
-      const x = scale * (tile.x - glider.mesh.position.x);
-      const y = -scale * (tile.y - glider.mesh.position.y);
-      ctx.translate(x,y);
-      const s = scale * tile.tileSize;
-      ctx.strokeRect(-s/2,-s/2,s,s);
-      ctx.restore();
-    }
+    // //draw rectangle for every world tile
+    // for (const tile of worldTiles) {
+    //   ctx.save();
+    //   const x = scale * (tile.x - glider.mesh.position.x);
+    //   const y = -scale * (tile.y - glider.mesh.position.y);
+    //   ctx.translate(x,y);
+    //   const s = scale * tile.tileSize;
+    //   ctx.strokeRect(-s/2,-s/2,s,s);
+    //   ctx.restore();
+    // }
 
-    // draw visibility circle
-    ctx.beginPath();
-    ctx.arc(0, 0, scale * 3000, 0, 2 * Math.PI);
-    ctx.stroke();
+    // // draw visibility circle
+    // ctx.beginPath();
+    // ctx.arc(0, 0, scale * 3000, 0, 2 * Math.PI);
+    // ctx.stroke();
 
-    // draw collidable area
-    {
-      ctx.save();
-      const x = scale * (collidable.x - glider.mesh.position.x);
-      const y = -scale * (collidable.y - glider.mesh.position.y);
-      ctx.translate(x,y);
-      const s = scale * collidable.size;
-      ctx.strokeRect(-s/2,-s/2,s,s);
-      ctx.restore();
+    // // draw collidable area
+    // {
+    //   ctx.save();
+    //   const x = scale * (collidable.x - glider.mesh.position.x);
+    //   const y = -scale * (collidable.y - glider.mesh.position.y);
+    //   ctx.translate(x,y);
+    //   const s = scale * collidable.size;
+    //   ctx.strokeRect(-s/2,-s/2,s,s);
+    //   ctx.restore();
 
-      // draw collidable houses
-      for (let i = 0; i < collidable.houses.count; i++) {
-        collidable.houses.getMatrixAt(i, m);
-        const x = scale * (m.elements[12] - glider.mesh.position.x);
-        const y = -scale * (m.elements[13] - glider.mesh.position.y);
-        const s = scale * 7;
-        ctx.save();
-        ctx.translate(x,y);
-        ctx.fillStyle = 'red';
-        ctx.fillRect(-s/2,-s/2,s,s);
-        ctx.restore();
-      }
+    //   // draw collidable houses
+    //   for (let i = 0; i < collidable.houses.count; i++) {
+    //     collidable.houses.getMatrixAt(i, m);
+    //     const x = scale * (m.elements[12] - glider.mesh.position.x);
+    //     const y = -scale * (m.elements[13] - glider.mesh.position.y);
+    //     const s = scale * 7;
+    //     ctx.save();
+    //     ctx.translate(x,y);
+    //     ctx.fillStyle = 'red';
+    //     ctx.fillRect(-s/2,-s/2,s,s);
+    //     ctx.restore();
+    //   }
 
-      // draw collidable trees
-      for (let i = 0; i < collidable.trees.count; i++) {
-        collidable.trees.getMatrixAt(i, m);
-        const x = scale * (m.elements[12] - glider.mesh.position.x);
-        const y = -scale * (m.elements[13] - glider.mesh.position.y);
-        const s = scale * 4;
-        ctx.save();
-        ctx.translate(x,y);
-        ctx.fillStyle = 'green';
-        ctx.fillRect(-s/2,-s/2,s,s);
-        ctx.restore();
-      }
-    }
+    //   // draw collidable trees
+    //   for (let i = 0; i < collidable.trees.count; i++) {
+    //     collidable.trees.getMatrixAt(i, m);
+    //     const x = scale * (m.elements[12] - glider.mesh.position.x);
+    //     const y = -scale * (m.elements[13] - glider.mesh.position.y);
+    //     const s = scale * 4;
+    //     ctx.save();
+    //     ctx.translate(x,y);
+    //     ctx.fillStyle = 'green';
+    //     ctx.fillRect(-s/2,-s/2,s,s);
+    //     ctx.restore();
+    //   }
+    // }
     ctx.restore();
   }
   
