@@ -6,7 +6,7 @@ const m = new THREE.Matrix4();
 
 export class MiniMap {
   constructor() {
-    this.scale = 16000; // length in m corresponding to min(map width, map height)
+    this.scale = 4000; // length in m corresponding to min(map width, map height)
     this.north = false;
 
     this.canvas = document.getElementById('mapCanvas');
