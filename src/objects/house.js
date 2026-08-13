@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { vertexColorMaterial } from '@/scene/materials';
 import { addVertexColors } from '@/utils/threeUtils';
 
