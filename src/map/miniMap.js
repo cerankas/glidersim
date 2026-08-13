@@ -37,7 +37,7 @@ export class MiniMap {
 
     window.addEventListener('resize', this.onWindowResize);
 
-    this.visible = JSON.parse(localStorage.getItem('mapVisible') | 'true');
+    this.visible = JSON.parse(localStorage.getItem('mapVisible') || 'true');
   }
 
   get width() { return this.canvas.width; }
