@@ -26,6 +26,9 @@ export class Game {
     this.mouseControlFlag = false;
     this.showStats = JSON.parse(localStorage.getItem('stats') || false);
 
+    if (!localStorage.getItem('firstTimeHelpDisplayed')) document.getElementById("help").hidden = false;
+    localStorage.setItem('firstTimeHelpDisplayed', 'true');
+
     this.range = config.visibilityRange;
 
     this.scene = new Scene(this.range);
