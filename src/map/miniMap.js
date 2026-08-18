@@ -124,47 +124,73 @@ export class MiniMap {
 
     ctx.fillStyle = 'white'
     ctx.strokeStyle = 'white';
-    
-    ctx.save();
-    ctx.translate(this.width/2, this.height/2);
-    {
-      if (task.points.length) {
-        // visited task checkpoints
-        ctx.save();
-        if (!this.north) ctx.rotate(-glider.yaw);
-        const x0 = scale * glider.mesh.position.x;
-        const y0 = -scale * glider.mesh.position.y;
-        const t = task;
-        ctx.strokeStyle = '#c0c0c0';
-        for (let i = 0; i < t.current; i++) {
-          const x = scale * t.points[i].x - x0;
-          const y = -scale * t.points[i].y - y0;
-          ctx.beginPath();
-          ctx.arc(x, y, t.radius * scale, 0, 2*Math.PI);
-          ctx.stroke();
-        }
-  
-        // task path
-        let prev = [0,0];
-        for (let i = t.current; i < t.points.length; i++) {
-          const x = scale * t.points[i].x - x0;
-          const y = -scale * t.points[i].y - y0;
-          ctx.beginPath();
-          ctx.moveTo(...prev);
-          ctx.strokeStyle = i == t.current ? '#ff0000' : '#0000ff';
-          ctx.lineTo(x, y);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(x, y, t.radius * scale, 0, 2*Math.PI);
-          ctx.stroke();
-          prev = [x,y];
-        }
-        ctx.restore();
+    ctx.lineWidth = 1;
+
+    { // draw in map coordinates
+      ctx.save();
+      ctx.translate(this.width/2, this.height/2);
+      if (!this.north) ctx.rotate(-glider.yaw);
+      
+      drawCheckpoints();
+      drawWindSymbol();
+
+      drawPeerGliderSymbols();
+      drawGliderSymbol.bind(this)();
+
+      // drawTileManagerHelper();
+      // drawVisibilityCircleHelper();
+      // drawCollidableAreaHelper();
+
+      ctx.restore();
+    }
+
+    { // draw in screen coordinates
+      drawNorthSymbol.bind(this)();
+      drawTaskInfo();
+      drawPositionInfo.bind(this)();
+      drawScaleIndicator.bind(this)();
+    }
+
+    function drawCheckpoints() {
+      if (!task.points.length) return;
+
+      ctx.save();
+
+      // visited checkpoints
+      const x0 = scale * glider.mesh.position.x;
+      const y0 = -scale * glider.mesh.position.y;
+      const t = task;
+      ctx.strokeStyle = '#c0c0c0';
+      
+      for (let i = 0; i < t.current; i++) {
+        const x = scale * t.points[i].x - x0;
+        const y = -scale * t.points[i].y - y0;
+        ctx.beginPath();
+        ctx.arc(x, y, t.radius * scale, 0, 2*Math.PI);
+        ctx.stroke();
       }
 
-      // wind symbol
+      // checkpoints ahead
+      let prev = [0,0];
+      for (let i = t.current; i < t.points.length; i++) {
+        const x = scale * t.points[i].x - x0;
+        const y = -scale * t.points[i].y - y0;
+        ctx.beginPath();
+        ctx.moveTo(...prev);
+        ctx.strokeStyle = i == t.current ? '#ff0000' : '#0000ff';
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, y, t.radius * scale, 0, 2*Math.PI);
+        ctx.stroke();
+        prev = [x,y];
+      }
+      
+      ctx.restore();
+    }
+    
+    function drawWindSymbol() {
       ctx.save();
-      if (!this.north) ctx.rotate(-glider.yaw);
       ctx.rotate(wind.direction * Math.PI/180);
       const d = 20;
       ctx.lineWidth = 1;
@@ -178,13 +204,13 @@ export class MiniMap {
       }
       ctx.stroke();
       ctx.restore();
+    }
 
-      // peer glider symbols
+    function drawPeerGliderSymbols() {
       for (let id in multiplayerGliders) {
         const peer = multiplayerGliders[id];
         ctx.save();
         ctx.strokeStyle = 'black';
-        if (!this.north) ctx.rotate(-glider.yaw);
         const x = scale * (peer.mesh.position.x - glider.mesh.position.x);
         const y = -scale * (peer.mesh.position.y - glider.mesh.position.y);
         ctx.translate(x,y);
@@ -204,9 +230,11 @@ export class MiniMap {
         ctx.stroke();
         ctx.restore();
       }
+    }
 
-      // glider symbol
-      if (this.north) ctx.rotate(glider.yaw);
+    function drawGliderSymbol() {
+      ctx.save();
+      ctx.rotate(glider.yaw);
       ctx.beginPath();
       ctx.strokeStyle = 'white'
       ctx.lineWidth = 1.5;
@@ -217,116 +245,114 @@ export class MiniMap {
       ctx.moveTo(-15,0);
       ctx.lineTo(15,0);
       ctx.stroke();
-      
+      ctx.restore();
     }
-    ctx.restore();
 
-    // north symbol
-    ctx.save();
-    ctx.translate(this.width - 15, 15);
-    if (!this.north) ctx.rotate(-glider.yaw);
-    ctx.beginPath();
-    ctx.lineWidth = 1.5;
-    ctx.moveTo(0,-10);
-    ctx.lineTo(-5,10);
-    ctx.lineTo(0,5);
-    ctx.stroke();
-    ctx.beginPath()
-    ctx.moveTo(0,-10);
-    ctx.lineTo(5,10);
-    ctx.lineTo(0,5);
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
+    function drawNorthSymbol() {
+      ctx.save();
+      ctx.translate(this.width - 15, 15);
+      if (!this.north) ctx.rotate(-glider.yaw);
+      ctx.beginPath();
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(0,-10);
+      ctx.lineTo(-5,10);
+      ctx.lineTo(0,5);
+      ctx.stroke();
+      ctx.beginPath()
+      ctx.moveTo(0,-10);
+      ctx.lineTo(5,10);
+      ctx.lineTo(0,5);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
 
-    // task
-    if (task.toTarget) {
+    function drawTaskInfo() {
+      if (!task.toTarget) return;
+
       ctx.fillText(`dst: ${Math.sqrt(task.toTarget.x**2 + task.toTarget.y**2)|0} m`,5,textHeight);
       ctx.fillText(`Δh: ${-task.toTarget.z|0} m`,5,2*textHeight);
     }
 
-    // position
-    const x = glider.mesh.position.x;
-    const y = glider.mesh.position.y;
-    ctx.fillText(`${(Math.abs(y/1000)).toFixed(3)} ${y >= 0 ? 'N' : 'S'}`, 5, this.height - 1 * textHeight);
-    ctx.fillText(`${(Math.abs(x/1000)).toFixed(3)} ${x >= 0 ? 'E' : 'W'}`, 5, this.height - 0 * textHeight);
+    function drawPositionInfo() {
+      const x = glider.mesh.position.x;
+      const y = glider.mesh.position.y;
+      ctx.fillText(`${(Math.abs(y/1000)).toFixed(3)} ${y >= 0 ? 'N' : 'S'}`, 5, this.height - 1 * textHeight);
+      ctx.fillText(`${(Math.abs(x/1000)).toFixed(3)} ${x >= 0 ? 'E' : 'W'}`, 5, this.height - 0 * textHeight);
+    }
 
-    // map scale indicator
-    const half = size / 8; // half of the map scale indicator width
-    ctx.save();
-    ctx.translate(this.width - half - 5, this.height - 5);
-    ctx.beginPath();
-    ctx.lineWidth = 1.5;
-    ctx.moveTo(-half, -3);
-    ctx.lineTo(-half, 3);
-    ctx.moveTo(-half, 0);
-    ctx.lineTo(half, 0);
-    ctx.moveTo(half, -3);
-    ctx.lineTo(half, 3);
-    ctx.stroke();
-    ctx.textAlign = 'center';
-    ctx.fillText(`${this.scale / 4} m`, 0, 0);
-    ctx.restore();
+    function drawScaleIndicator() {
+      const half = size / 8; // half of the map scale indicator width
+      ctx.save();
+      ctx.translate(this.width - half - 5, this.height - 5);
+      ctx.beginPath();
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(-half, -3);
+      ctx.lineTo(-half, 3);
+      ctx.moveTo(-half, 0);
+      ctx.lineTo(half, 0);
+      ctx.moveTo(half, -3);
+      ctx.lineTo(half, 3);
+      ctx.stroke();
+      ctx.textAlign = 'center';
+      ctx.fillText(`${this.scale / 4} m`, 0, 0);
+      ctx.restore();
+    }
 
-    // // draw tileManager helper
-    // ctx.save();
-    // ctx.translate(this.width/2, this.height/2);
-    // if (!this.north) ctx.rotate(-glider.yaw);
-    // ctx.lineWidth = .5;
 
-    // //draw rectangle for every world tile
-    // for (const tile of worldTiles) {
-    //   ctx.save();
-    //   const x = scale * (tile.x - glider.mesh.position.x);
-    //   const y = -scale * (tile.y - glider.mesh.position.y);
-    //   ctx.translate(x,y);
-    //   const s = scale * tile.tileSize;
-    //   ctx.strokeRect(-s/2,-s/2,s,s);
-    //   ctx.restore();
-    // }
+    function drawTileManagerHelper() {
+      for (const tile of worldTiles) {
+        ctx.save();
+        const x = scale * (tile.x - glider.mesh.position.x);
+        const y = -scale * (tile.y - glider.mesh.position.y);
+        ctx.translate(x,y);
+        const s = scale * tile.tileSize;
+        ctx.strokeRect(-s/2,-s/2,s,s);
+        ctx.restore();
+      }
+    }
 
-    // // draw visibility circle
-    // ctx.beginPath();
-    // ctx.arc(0, 0, scale * 3000, 0, 2 * Math.PI);
-    // ctx.stroke();
+    function drawVisibilityCircleHelper() {
+      ctx.beginPath();
+      ctx.arc(0, 0, scale * 3000, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
 
-    // // draw collidable area
-    // {
-    //   ctx.save();
-    //   const x = scale * (collidable.x - glider.mesh.position.x);
-    //   const y = -scale * (collidable.y - glider.mesh.position.y);
-    //   ctx.translate(x,y);
-    //   const s = scale * collidable.size;
-    //   ctx.strokeRect(-s/2,-s/2,s,s);
-    //   ctx.restore();
+    function drawCollidableAreaHelper() {
+      ctx.save();
+      const x = scale * (collidable.x - glider.mesh.position.x);
+      const y = -scale * (collidable.y - glider.mesh.position.y);
+      ctx.translate(x,y);
+      const s = scale * collidable.size;
+      ctx.strokeRect(-s/2,-s/2,s,s);
+      ctx.restore();
 
-    //   // draw collidable houses
-    //   for (let i = 0; i < collidable.houses.count; i++) {
-    //     collidable.houses.getMatrixAt(i, m);
-    //     const x = scale * (m.elements[12] - glider.mesh.position.x);
-    //     const y = -scale * (m.elements[13] - glider.mesh.position.y);
-    //     const s = scale * 7;
-    //     ctx.save();
-    //     ctx.translate(x,y);
-    //     ctx.fillStyle = 'red';
-    //     ctx.fillRect(-s/2,-s/2,s,s);
-    //     ctx.restore();
-    //   }
+      // draw collidable houses
+      for (let i = 0; i < collidable.houses.count; i++) {
+        collidable.houses.getMatrixAt(i, m);
+        const x = scale * (m.elements[12] - glider.mesh.position.x);
+        const y = -scale * (m.elements[13] - glider.mesh.position.y);
+        const s = scale * 7;
+        ctx.save();
+        ctx.translate(x,y);
+        ctx.fillStyle = 'red';
+        ctx.fillRect(-s/2,-s/2,s,s);
+        ctx.restore();
+      }
 
-    //   // draw collidable trees
-    //   for (let i = 0; i < collidable.trees.count; i++) {
-    //     collidable.trees.getMatrixAt(i, m);
-    //     const x = scale * (m.elements[12] - glider.mesh.position.x);
-    //     const y = -scale * (m.elements[13] - glider.mesh.position.y);
-    //     const s = scale * 4;
-    //     ctx.save();
-    //     ctx.translate(x,y);
-    //     ctx.fillStyle = 'green';
-    //     ctx.fillRect(-s/2,-s/2,s,s);
-    //     ctx.restore();
-    //   }
-    // }
-    ctx.restore();
+      // draw collidable trees
+      for (let i = 0; i < collidable.trees.count; i++) {
+        collidable.trees.getMatrixAt(i, m);
+        const x = scale * (m.elements[12] - glider.mesh.position.x);
+        const y = -scale * (m.elements[13] - glider.mesh.position.y);
+        const s = scale * 4;
+        ctx.save();
+        ctx.translate(x,y);
+        ctx.fillStyle = 'green';
+        ctx.fillRect(-s/2,-s/2,s,s);
+        ctx.restore();
+      }      
+    }
   }
   
   clearOverlay() {
