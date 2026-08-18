@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { ImprovedNoise } from 'three/addons/math/ImprovedNoise.js';
+import { timeIt } from '@/utils/timeIt';
 
 
 const freq1 = .003;
@@ -16,7 +17,7 @@ const _vtmp = new THREE.Vector3();
 const _vresult = new THREE.Vector3();
 
 
-export function terrainHeight(x, y) { // ~120 ns per call
+export function terrainHeight(x, y) { // ~100 ns per call
   x -= 6000;
   y -= 3500;
   const fine   = 1 + perlin.noise(x * freq1, y * freq1, 2.7);
@@ -112,7 +113,40 @@ export class TerrainTile {
     this.y = y0;
   }
 
-  getNormal(x, y) { // ~60 ns per call
+  getHeight(x, y) { // ~20 ns per call
+    const i = (x - this.x + this.tileSize * .5) / this.quadSize;
+    const j = (y - this.y + this.tileSize * .5) / this.quadSize;
+
+    const i0 = Math.floor(i);
+    const j0 = Math.floor(j);
+
+    const wi = i - i0;
+    const wj = j - j0;
+
+    if (i0 < 0 || j0 < 0 || i0 >= this.quadsPerSide || j0 >= this.quadsPerSide) return null;
+
+    const verticesPerSide = this.quadsPerSide + 1;
+    
+    const ia = i0 + verticesPerSide * j0;
+    const ib = ia + 1;
+    const ic = ia + verticesPerSide + 1;
+    const id = ia + verticesPerSide;
+
+    const positions = this.geometry.attributes.position.array;
+
+    const wa = (1 - wi) * (1 - wj);
+    const wb = wi       * (1 - wj);
+    const wc = wi       * wj;
+    const wd = (1 - wi) * wj;
+
+    return positions[3 * ia + 2] * wa +
+      positions[3 * ib + 2] * wb +
+      positions[3 * ic + 2] * wc +
+      positions[3 * id + 2] * wd
+    ;
+  }
+
+  getNormal(x, y) { // ~50 ns per call
     const i = (x - this.x + this.tileSize * .5) / this.quadSize;
     const j = (y - this.y + this.tileSize * .5) / this.quadSize;
 
@@ -146,3 +180,17 @@ export class TerrainTile {
     .normalize();
   }
 }
+
+
+function testTiming() {
+  const tile = new TerrainTile(3000, 12);
+  tile.update(0, 0);
+  
+  const n = 1_000_000;
+  timeIt(() => Math.random() * 1500 + Math.random() * 1500, n, 'rnd');
+  timeIt(() => tile.getHeight(Math.random() * 1500, Math.random() * 1500), n, 'height');
+  timeIt(() => tile.getNormal(Math.random() * 1500, Math.random() * 1500), n, 'normal');
+  timeIt(() => terrainHeight(Math.random() * 1500, Math.random() * 1500), n, 'terrainHeight');
+}
+
+// testTiming();

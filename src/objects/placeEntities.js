@@ -1,6 +1,5 @@
 import * as THREE from 'three/webgpu';
 import { seededRandom } from '@/utils/random';
-import { terrainHeight } from '@/map/terrain';
 
 
 const vertical = new THREE.Vector3(0,0,1);
@@ -19,7 +18,7 @@ export function placeEntities(mesh, r, type, bucketManager, terrain, maxCount) {
   while (maxCount--) {
     const x = x0 + rnd() * size;
     const y = y0 + rnd() * size;
-    const z = terrainHeight(x, y);
+    const z = terrain.getHeight(x, y);
 
     if (z < 0) continue;
 
