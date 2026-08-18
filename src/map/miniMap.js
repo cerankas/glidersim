@@ -113,7 +113,7 @@ export class MiniMap {
 
     ctx.clearRect(0, 0, this.width, this.height);
 
-    const fontSize = 300 * Math.min(this.width, this.height) / Math.min(window.innerWidth, window.innerHeight);
+    const fontSize = 150 * (Math.min(this.width, this.height) / Math.min(window.innerWidth, window.innerHeight)) ** .3;
 
     ctx.font = `${fontSize}% Arial, Helvetica, sans-serif`;
     ctx.textAlign = 'left';
