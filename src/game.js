@@ -52,7 +52,7 @@ export class Game {
     
     this.stats = new Stats();
 
-    this.windHelper = new WindHelper(this.scene, 500, 10);
+    this.windHelper = new WindHelper(this.scene, 60, 6);
     
     this.renderer = new THREE.WebGPURenderer({antialias:true, logarithmicDepthBuffer:true});
     this.renderer.highPrecision = true;

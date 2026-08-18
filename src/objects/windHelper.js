@@ -2,10 +2,11 @@ import * as THREE from 'three/webgpu';
 
 
 export class WindHelper {
-  constructor(scene, range, count) {
+  constructor(scene, range, segmentCount) {
+    const count = segmentCount + 1;
     this.range = range;
     this.count = count;
-    this.step = range / count;
+    this.step = range / segmentCount;
 
     const vertexCount = count * count * 2;
     this.positions = new Float32Array(vertexCount * 3);
