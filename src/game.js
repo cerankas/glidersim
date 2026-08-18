@@ -19,6 +19,7 @@ import { Collider } from '@/collider/collider';
 import { Mouse } from './control/mouse';
 import { Keyboard } from './control/keyboard';
 import { config } from './config';
+import { WindHelper } from './objects/windHelper';
 
 
 export class Game {
@@ -50,6 +51,8 @@ export class Game {
     this.airflowSound = new AirflowSound();
     
     this.stats = new Stats();
+
+    this.windHelper = new WindHelper(this.scene, 500, 10);
     
     this.renderer = new THREE.WebGPURenderer({antialias:true, logarithmicDepthBuffer:true});
     this.renderer.highPrecision = true;
@@ -164,6 +167,8 @@ export class Game {
     this.multiplayer.update(t, this.worldManager, this.wind, this.scene, this.camera);
     
     this.task.update(this.glider.mesh.position, this.glider.time);
+
+    this.windHelper.update(this.glider.mesh.position, this.wind, this.worldManager);
   
     this.renderWorld();
 
