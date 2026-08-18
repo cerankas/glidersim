@@ -8,21 +8,29 @@ export const dustBallMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff,
 
 export const terrainMaterial = new THREE.MeshLambertMaterial({ flatShading: false });
 
-new THREE.TextureLoader().load("textures/moro.jpg", (map) => {
+new THREE.TextureLoader().load("textures/camo.jpg", (map) => {
   map.wrapS = THREE.RepeatWrapping;
   map.wrapT = THREE.RepeatWrapping;
   terrainMaterial.map = map;
+  terrainMaterial.needsUpdate = true;
+
   const ctx = document.createElement('canvas').getContext('2d', {willReadFrequently:true});
-  ctx.canvas.width = map.image.width;
-  ctx.canvas.height = map.image.height;
+  ctx.canvas.width = map.width;
+  ctx.canvas.height = map.height;
   ctx.drawImage(map.image, 0, 0);
-  const pixel = ctx.getImageData(5, 5, 1, 1).data;
+
+  const color = new THREE.Color();
+
   terrainMaterial.getPixelColor = ((x, y) => {
-    const coord = v => ((((v % 1000) + 1000) % 1000) * 1024 / 1000) | 0;
-    const pixel = ctx.getImageData(coord(x), 1023 - coord(y), 1, 1).data;
-    // return pixel[0]*0x10000 + pixel[1] * 0x100 + pixel[2];
-    return new THREE.Color(pixel[0]*0x10000 + pixel[1] * 0x100 + pixel[2]).convertLinearToSRGB().getHex();
-  }).bind(ctx);
+    const px = (x / 1000 % 1 + 1) % 1 * map.width | 0;
+    const py = (y / 1000 % 1 + 1) % 1 * map.height | 0;
+    
+    const pixel = ctx.getImageData(px, map.height - 1 - py, 1, 1).data;
+    
+    return color.set((pixel[0] << 16) + (pixel[1] << 8) + pixel[2])
+    .convertLinearToSRGB()
+    .getHex();
+  });
 });
 
 
